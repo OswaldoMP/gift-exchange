@@ -8,6 +8,8 @@ import {
   User,
 } from '@supabase/supabase-js'
 import { environment } from '../../enviroments/enviroment'
+import { Participant, ParticipantEntity } from '../models/participant-entity'
+import { Gift, GiftEntity } from '../models/Gift'
 
 export interface Profile {
   id?: string
@@ -69,5 +71,137 @@ export class SupabaseService {
 
   uploadAvatar(filePath: string, file: File) {
     return this.supabase.storage.from('avatars').upload(filePath, file)
+  }
+
+
+  // CRUD
+  async getParticipants(name: string): Promise<Participant[]> {
+    console.log("[getParticipants FIND BY] => ", name);
+    try {
+      const { data, error } = await this.supabase.from('participants').select("*").isDistinct("name", name);
+      if (error) {
+        throw error;
+      }
+
+      console.log("[DATA SUPABASE SELECTO ALL] => ", data);
+      const p: Participant[] = data.map(v => {
+        const pMap: Participant = {
+          id: v.id,
+          name: v.name,
+          gifts: [],
+          avatarUrl: ""
+        }
+        return pMap;
+      })
+      return p;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+  async getParticipant(name: string): Promise<Participant> {
+    console.log("[getParticipant FIND BY] => ", name);
+    try {
+      const { data, error } = await this.supabase.from('participants').select("*").eq("name", name);
+      if (error) {
+        throw error;
+      }
+      console.log("[DATA PARTICIPANT] => ", data);
+      const giftData = await this.getGift(data[0].id);
+
+      const gifts: Gift[] = giftData.map(g => {
+        const gMap: Gift = {
+          id: g.id,
+          title: g.title,
+          link: g.link,
+          store: g.store
+        }
+        return gMap;
+      })
+
+      const p: Participant = {
+        id: data[0].id,
+        gifts,
+        name: data[0].name,
+        avatarUrl: ""
+      }
+      return p;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+  async saveParticipant(participant: Participant): Promise<any> {
+    try {
+      const p: ParticipantEntity = {
+        name: participant.name,
+        oauth_id: participant.auth_id
+      }
+      const { data, error } = await this.supabase.from('participants').insert([p]);
+      if (error) {
+        throw error;
+      }
+      console.log("[DATA SUPABASE] => ", data);
+      return data;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+  async saveGift(gift: Gift, participant_id: number): Promise<any> {
+    try {
+      const g: GiftEntity = {
+        participant_id,
+        link: gift.link,
+        title: gift.title,
+        store: gift.store,
+      }
+      const { data, error } = await this.supabase.from('gift').insert([g]);
+      if (error) {
+        throw error;
+      }
+      console.log("[DATA SUPABASE] => ", data);
+      return data;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+  async getGift(participant_id: number) {
+    try {
+      const { data, error } = await this.supabase.from('gift').select("*").eq("participant_id", participant_id);
+      if (error) {
+        throw error;
+      }
+      console.log("[DATA SUPABASE] => ", data);
+      return data;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+  async updateGift(gift: Gift, participant_id: number): Promise<any> {
+    try {
+      const g: GiftEntity = {
+        participant_id,
+        link: gift.link,
+        title: gift.title,
+        store: gift.store,
+      }
+      const { data, error } = await this.supabase.from('gift').update(g).eq('id', gift.id);
+      if (error) {
+        throw error;
+      }
+      console.log("[DATA SUPABASE] => ", data);
+      return data;
+    } catch (error) {
+      console.log("[ERROR] => ", error);
+      throw error;
+    }
   }
 }

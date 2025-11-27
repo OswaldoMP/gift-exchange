@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Participant } from '../models/participant-entity';
 import { Gift } from '../models/Gift';
 import { ParticipantServiceService } from '../services/participant-service.service';
 import { FormsModule } from '@angular/forms';
+import { SupabaseService } from '../services/supabase-service.service';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 
 @Component({
   selector: 'app-exchange',
@@ -13,91 +15,116 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './exchange.component.html',
   styleUrl: './exchange.component.css'
 })
-export class ExchangeComponent {
+export class ExchangeComponent implements OnInit {
 
-currentUser!: Participant;
-participants: Participant[] = [];
-drawResult: boolean = false ;
-
-
-expandedUserId: string | null = null;
-selectedGift: Gift | null = null;
-newGift: Gift | null = null;
-
-constructor(
-  public participantService: ParticipantServiceService
-) {
-  this.currentUser = participantService.getCurrentParticipant();
-  this.participants = participantService.getParticipants();
-  this.drawResult = participantService.getDrawnStatu();
-} 
-
-// Computed
-get isDrawn() {
-  return this.drawResult;
-  // return this.drawResult === false;
-}
+  currentUser!: Participant;
+  participants: Participant[] = [];
+  drawResult: boolean = false;
 
 
-get myAssignedFriend(): Participant | null {
-if (!this.isDrawn) return null;
+  expandedUserId: string | null = null;
+  selectedGift: Gift | null = null;
+  newGift: Gift | null = null;
+  userEmail: string = "";
 
-return this.participants.find(p => p.id === "2") || null;
-}
-
-get canAddGift(): boolean {
-  return this.currentUser.gifts.length < 5;
-}
-
-
-// UI actions
-toggleUserExpand(userId: string) {
-this.expandedUserId = this.expandedUserId === userId ? null : userId;
-}
-
-
-openGift(gift: Gift) {
-this.selectedGift = gift;
-// prevent background scroll if wanted
-document.body.style.overflow = 'hidden';
-}
-
-openDialogNewGift() {
-  this.newGift = {
-    id: "",
-    title: "",
-    store: "",
-    link: ""
+  constructor(
+    public participantService: ParticipantServiceService,
+    public supabaseService: SupabaseService,
+    public route: ActivatedRoute
+  ) {
+    supabaseService.getParticipant(this.userEmail).then(res => {
+      this.currentUser = res;
+    });
+    supabaseService.getParticipants(this.userEmail).then(res => {
+      this.participants = res;
+    });
+    this.drawResult = participantService.getDrawnStatu();
   }
-  document.body.style.overflow = 'hidden'; 
-}
+
+  ngOnInit(): void {
+    this.route.snapshot.queryParamMap.get('email');
+    console.log("[EMAIL] => ", this.userEmail);
+  }
+
+  // Computed
+  get isDrawn() {
+    return this.drawResult;
+    // return this.drawResult === false;
+  }
 
 
-closeGift() {
-this.selectedGift = null;
-this.newGift = null;
-document.body.style.overflow = '';
+  get myAssignedFriend(): Participant | null {
+    if (!this.isDrawn) return null;
 
-// Refresh
-// this.currentUser = this.participantService.getCurrentParticipant();
-}
+    return this.participants.find(p => p.id === "2") || null;
+  }
+
+  get canAddGift(): boolean {
+    return this.currentUser.gifts.length < 5;
+  }
 
 
-// Placeholder: función para disparar el sorteo (probablemente en el backend)
-requestDraw() {
-// emit event o llamada a servicio; aquí solo un ejemplo de cómo se podría indicar
-console.log('Solicitar sorteo al backend...');
-}
+  // UI actions
+  toggleUserExpand(userId: string) {
+    this.expandedUserId = this.expandedUserId === userId ? null : userId;
+  }
 
-addGift(gift: Gift) {
-  this.participantService.addNewGift(gift);  
-  this.closeGift();
-}
 
-removeGift(gift: Gift) {
-  this.participantService.removeGift(gift);
-  this.closeGift();
-}
+  openGift(gift: Gift) {
+    this.selectedGift = gift;
+    // prevent background scroll if wanted
+    document.body.style.overflow = 'hidden';
+  }
+
+  openDialogNewGift() {
+    this.newGift = {
+      id: "",
+      title: "",
+      store: "",
+      link: ""
+    }
+    document.body.style.overflow = 'hidden';
+  }
+
+
+  closeGift() {
+    this.selectedGift = null;
+    this.newGift = null;
+    document.body.style.overflow = '';
+
+    // Refresh
+    // this.currentUser = this.participantService.getCurrentParticipant();
+  }
+
+
+  // Placeholder: función para disparar el sorteo (probablemente en el backend)
+  requestDraw() {
+    // emit event o llamada a servicio; aquí solo un ejemplo de cómo se podría indicar
+    console.log('Solicitar sorteo al backend...');
+  }
+
+  addGift(gift: Gift) {
+    this.participantService.addNewGift(gift);
+    this.supabaseService.saveGift(gift, Number(this.currentUser.id))
+    this.closeGift();
+  }
+
+  removeGift(gift: Gift) {
+    this.participantService.removeGift(gift);
+    this.closeGift();
+  }
+
+  addParticiapant() {
+    const participant: Participant = {
+      name: "Adrian Oswaldo",
+      gifts: []
+    }
+    this.supabaseService.saveParticipant(participant).then(() => {
+      console.log("SAVED!");
+    }).catch(err => {
+      console.log("FAILED!")
+    });
+  }
 
 }
 
