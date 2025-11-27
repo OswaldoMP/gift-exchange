@@ -1,0 +1,93 @@
+.app-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+    color: #4a5568;
+    margin: 0;
+    font-weight: 600;
+}
+
+.user-info {
+    color: #718096;
+    font-weight: 500;
+}
+
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pre-draw-view,
+.post-draw-view {
+    display: grid;
+    gap: 2rem;
+}
+
+.pre-draw-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "user participants" "gifts participants" "draw draw";
+}
+
+.post-draw-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "user secret" "gifts secret";
+}
+
+.user-section {
+    grid-area: user;
+}
+
+.gifts-section {
+    grid-area: gifts;
+}
+
+.participants-section {
+    grid-area: participants;
+}
+
+.secret-friend-section {
+    grid-area: secret;
+}
+
+.draw-section {
+    grid-area: draw;
+}
+
+.draw-button {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.draw-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+}
+
+.draw-button:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

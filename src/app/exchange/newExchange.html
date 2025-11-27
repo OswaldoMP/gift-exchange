@@ -1,0 +1,116 @@
+<div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="user-info">
+            <h1>{{ currentUser.name }}</h1>
+            <span class="participant-count">{{ participantCount() }} participantes</span>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <!-- Sección de Regalos -->
+        <section class="gifts-section">
+            <div class="section-header">
+                <h2>Mis regalos ({{ giftCount }} / {{ maxGifts }})</h2>
+                <button *ngIf="canAddMoreGifts() && !showAddGiftForm()" class="add-button" (click)="showAddGiftForm.set(true)">
+          + Agregar regalo
+        </button>
+            </div>
+
+            <!-- Formulario para agregar regalo -->
+            <div *ngIf="showAddGiftForm()" class="add-gift-form">
+                <h3>Agregar nuevo regalo</h3>
+                <div class="form-group">
+                    <input type="text" [(ngModel)]="newGiftName" placeholder="Nombre del regalo" class="form-input">
+                </div>
+                <div class="form-group">
+                    <textarea [(ngModel)]="newGiftDescription" placeholder="Descripción" class="form-textarea"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button (click)="addGift()" class="save-button">Guardar</button>
+                    <button (click)="showAddGiftForm.set(false)" class="cancel-button">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Lista de Regalos -->
+            <div class="gifts-grid">
+                <div *ngFor="let gift of gifts()" class="gift-card" (click)="showGiftDetails(gift)">
+                    <div class="gift-header">
+                        <h3>{{ gift.title }}</h3>
+                        <span class="priority-badge" [class]="gift.link">
+              {{ gift.link }}
+            </span>
+                    </div>
+                    <p class="gift-description">{{ gift.store }}</p>
+                    <button class="remove-button" (click)="removeGift(gift.id); $event.stopPropagation()">
+            ×
+          </button>
+                </div>
+
+                <!-- Placeholder para agregar más regalos -->
+                <div *ngIf="canAddMoreGifts() && !showAddGiftForm()" class="gift-card add-gift-placeholder" (click)="showAddGiftForm.set(true)">
+                    <span class="add-icon">+</span>
+                    <p>Agregar regalo</p>
+                </div>
+            </div>
+
+            <p class="gift-hint">Haz clic en un regalo para ver más detalles</p>
+        </section>
+
+        <!-- Sección de Participantes -->
+        <section class="participants-section">
+            <div class="section-header">
+                <h2>Participantes</h2>
+                <p class="section-subtitle">
+                    Antes del sorteo puedes ver la lista completa y cuántos regalos agregaron
+                </p>
+            </div>
+
+            <div class="participants-list">
+                <div *ngFor="let participant of participantsTwo()" class="participant-item">
+
+                    <div class="participant-info">
+                        <span class="participant-name">{{ participant.name }}</span>
+                        <span class="gift-count">{{ participant.gifts.length }} regalos</span>
+                    </div>
+
+                    <div class="participant-status">
+                        <div class="status-indicator" [class.completed]="participant.gifts.length > 0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Sorteo -->
+        <section class="draw-section">
+            <div class="draw-actions">
+                <button class="draw-button secondary" (click)="requestDraw()">
+          Solicitar sorteo
+        </button>
+                <button class="draw-button primary" (click)="performDraw()">
+          Realizar sorteo
+        </button>
+            </div>
+            <p class="draw-note">[Sorteo pendiente]</p>
+        </section>
+    </main>
+
+    <!-- Modal de Detalles del Regalo -->
+    <div *ngIf="selectedGift()" class="modal-overlay" (click)="closeGiftDetails()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>{{ selectedGift()?.title }}</h3>
+                <button class="close-button" (click)="closeGiftDetails()">×</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Descripción:</strong> {{ selectedGift()?.store }}</p>
+                <p><strong>Prioridad:</strong>
+                    <span class="priority-badge" [class]="selectedGift()?.link">
+            {{ selectedGift()?.link }}
+          </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,194 @@
+<div class="amigo-secreto-root">
+    <header class="header">
+        <div class="user-card">
+            <img [src]="currentUser.avatarUrl || '../../assets/default-avatar.png'" alt="avatar" class="avatar">
+            <div>
+                <div class="name">{{ currentUser.name }}</div>
+                <div class="meta">{{ participants.length }} participantes</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <div class="status" [class.drawn]="isDrawn">
+                {{ isDrawn ? 'Sorteo realizado' : 'Sorteo pendiente' }}
+            </div>
+            <button class="btn secondary" (click)="requestDraw()" [disabled]="isDrawn">Solicitar sorteo</button>
+        </div>
+    </header>
+
+    <main class="grid">
+        <section class="panel my-gifts">
+            <h3>Mis regalos ({{ currentUser.gifts.length }} / 5)</h3>
+            <div class="actions">
+                <div>
+                    <button *ngIf="canAddGift" class="btn success" (click)="openDialogNewGift()">Agregar regalo</button>
+                </div>
+            </div>
+            <ul class="gift-list">
+                <li *ngFor="let g of currentUser.gifts" class="gift-item" (click)="openGift(g)">
+                    <!-- <img [src]="g.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="gift-thumb"> -->
+                    <div class="gift-info">
+                        <div class="gift-title">{{ g.title }}</div>
+                        <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
+                    </div>
+                </li>
+            </ul>
+            <div class="hint">Clic en un regalo para ver más detalles.</div>
+        </section>
+
+        <section class="panel others">
+            <ng-container *ngIf="!isDrawn">
+                <h3>Participantes</h3>
+                <p class="muted">Antes del sorteo puedes ver la lista completa y cuántos regalos agregaron.</p>
+
+                <ul class="participants">
+                    <li *ngFor="let p of participants" class="participant-card">
+                        <div class="participant-left">
+                            <img [src]="p.avatarUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar-sm">
+                            <div>
+                                <div class="p-name">{{ p.name }}</div>
+                                <div class="p-gifts">{{ p.gifts.length }} regalos</div>
+                            </div>
+                        </div>
+                        <!-- <button class="btn link" (click)="toggleUserExpand(p.id)">Ver</button>
+
+                        <div class="expand" *ngIf="expandedUserId === p.id">
+                            <ul class="mini-gifts">
+                                <li *ngFor="let g of p.gifts" (click)="openGift(g)">{{ g.title }}</li>
+                            </ul>
+                        </div> -->
+                    </li>
+                </ul>
+            </ng-container>
+
+            <ng-container *ngIf="isDrawn">
+                <h3>Tu amigo secreto</h3>
+                <p class="muted">Información y lista de regalos de la persona que te tocó.</p>
+
+                <div *ngIf="myAssignedFriend; else noFriend">
+                    <div class="assigned-card">
+                        <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar-lg">
+                        <div class="assigned-info">
+                            <div class="name">{{ myAssignedFriend.name }}</div>
+                            <div class="meta">{{ myAssignedFriend.gifts.length }} regalos</div>
+                        </div>
+                    </div>
+
+                    <h4>Lista de regalos</h4>
+                    <ul class="gift-list">
+                        <li *ngFor="let g of myAssignedFriend.gifts" class="gift-item" (click)="openGift(g)">
+                            <!-- <img [src]="g.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="gift-thumb"> -->
+                            <div class="gift-info">
+                                <div class="gift-title">{{ g.title }}</div>
+                                <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <ng-template #noFriend>
+                    <div class="muted">No se encontró la asignación. Contacta al organizador.</div>
+                </ng-template>
+            </ng-container>
+        </section>
+    </main>
+
+    <!-- Modal de detalle de regalo -->
+    <div class="modal" *ngIf="selectedGift">
+        <div class="modal-backdrop" (click)="closeGift()"></div>
+        <div class="modal-card">
+            <button class="modal-close" (click)="closeGift()">×</button>
+            <div class="actions">
+                <div>
+                    <button class="btn success" (click)="addGift(selectedGift)">Guardar</button>
+                </div>
+                <div>
+                    <button class="btn danger" (click)="removeGift(selectedGift)">Eliminar</button>
+                </div>
+            </div>
+            <!-- <img [src]="selectedGift.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="modal-image"> -->
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Nombre:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [value]="selectedGift.title">
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Tienda:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [value]="selectedGift.store">
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Link:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [value]="selectedGift.link">
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </div>
+    </div>
+
+    <!-- Modal Agregar regalo -->
+    <div class="modal" *ngIf="newGift">
+        <div class="modal-backdrop" (click)="closeGift()"></div>
+        <div class="modal-card">
+            <button class="modal-close" (click)="closeGift()">×</button>
+            <!-- <img [src]="newGift.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="modal-image">
+            <h3>{{ newGift.title }}</h3>
+            <p class="muted">{{ newGift.priceEstimate || 'Sin precio estimado' }}</p>
+            <p class="description">{{ newGift.description || 'Sin descripción adicional.' }}</p> -->
+            <div class="actions">
+                <div>
+                    <button class="btn success" (click)="addGift(newGift)">Guardar</button>
+                </div>
+            </div>
+
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Nombre:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [(ngModel)]="newGift.title">
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Tienda:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [(ngModel)]="newGift.store">
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="participant-card">
+                <div class="participant-left">
+                    <div>
+                        <div class="p-name">Link:</div>
+                        <div class="p-gifts">
+                            <input class="participant-card" type="text" [(ngModel)]="newGift.link">
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+        </div>
+    </div>
+
+</div>
