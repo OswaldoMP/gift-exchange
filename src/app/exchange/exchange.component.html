@@ -5,6 +5,9 @@
             <div>
                 <div class="name">{{ currentUser.name }}</div>
                 <div class="meta">{{ participants.length }} participantes</div>
+                <div class="actions">
+                    <button class="btn secondary" (click)="signOut()">Cerrar Sesion</button>
+                </div>
             </div>
         </div>
 
@@ -15,7 +18,6 @@
             <button class="btn secondary" (click)="requestDraw()" [disabled]="isDrawn">Solicitar sorteo</button>
         </div>
     </header>
-
     <main class="grid">
         <section class="panel my-gifts">
             <h3>Mis regalos ({{ currentUser.gifts.length }} / 5)</h3>

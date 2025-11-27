@@ -48,12 +48,24 @@ export class SupabaseService {
     return this.supabase.auth.onAuthStateChange(callback)
   }
 
-  signIn(email: string) {
-    return this.supabase.auth.signInWithOtp({ email })
+  signIn(email: string, password: string) {
+    return this.supabase.auth.signInWithPassword({ email, password })
   }
 
   signOut() {
     return this.supabase.auth.signOut()
+  }
+
+  singInByToken(token: string) {
+    return this.supabase.auth.getUser(token);
+  }
+
+  signUp(email: string, password: string, username: string) {
+    return this.supabase.auth.signUp({email, password, options: {
+      data: {
+        username
+      }
+    }});
   }
 
   updateProfile(profile: Profile) {

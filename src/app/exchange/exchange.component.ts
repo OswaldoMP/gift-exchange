@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject} from '@angular/core';
 import { Participant } from '../models/participant-entity';
 import { Gift } from '../models/Gift';
 import { ParticipantServiceService } from '../services/participant-service.service';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../services/supabase-service.service';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 @Component({
   selector: 'app-exchange',
@@ -17,6 +17,8 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
 })
 export class ExchangeComponent implements OnInit {
 
+    private router = inject(Router);
+  
   currentUser!: Participant;
   participants: Participant[] = [];
   drawResult: boolean = false;
@@ -124,6 +126,17 @@ export class ExchangeComponent implements OnInit {
     }).catch(err => {
       console.log("FAILED!")
     });
+  }
+
+  async signOut() {
+    const { error } = await this.supabaseService.signOut();
+    if (error) {
+      console.error("Error signing out:", error.message);
+    } else {
+      console.log("User successfully signed out.");
+      // Optionally, redirect the user to a login page or home page
+      this.router.navigate(['/login']);
+    }
   }
 
 }

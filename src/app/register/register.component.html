@@ -1,35 +1,41 @@
-<div class="auth-container">
-    <div class="auth-background">
+<div class="register-container">
+    <div class="register-background">
         <!-- Elementos decorativos de regalos -->
         <div class="floating-gift gift-1">🎁</div>
         <div class="floating-gift gift-2">🎄</div>
         <div class="floating-gift gift-3">🎀</div>
         <div class="floating-gift gift-4">⭐</div>
         <div class="floating-gift gift-5">🦌</div>
+        <div class="floating-gift gift-6">❄️</div>
     </div>
 
-    <div class="auth-card">
+    <div class="register-card">
         <!-- Header -->
-        <div class="auth-header">
+        <div class="register-header">
             <div class="logo">
                 <span class="logo-icon">🎁</span>
                 <h1>SecretSanta</h1>
             </div>
-            <p class="welcome-text">¡La diversión del intercambio comienza aquí!</p>
+            <p class="welcome-text">Forma parte de nuestro increíble equipo y diviértete con nosotros</p>
         </div>
 
-        <!-- Formulario de Login -->
-        <div class="auth-form">
-            <h2>Iniciar Sesión</h2>
+        <!-- Formulario de Registro -->
+        <div class="register-form">
+            <h2>Crear Cuenta</h2>
 
-            <form (ngSubmit)="onLogin()" class="form">
+            <form (ngSubmit)="onRegister()" class="form">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Nombre</label>
+                    <input type="text" id="fullName" [(ngModel)]="fullName" name="fullName" placeholder="Enter your full name" required class="form-input">
+                </div>
+
                 <div class="form-group">
                     <label for="email" class="form-label">E-MAIL</label>
                     <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Enter your e-mail address" required class="form-input">
                 </div>
 
                 <div class="form-group">
-                    <label for="password" class="form-label">PASSWORD</label>
+                    <label for="password" class="form-label">Contraseña</label>
                     <div class="password-input-container">
                         <input [type]="showPassword() ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password" placeholder="Enter your password" required class="form-input password-input">
                         <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
@@ -38,16 +44,18 @@
                     </div>
                 </div>
 
-                <button type="submit" class="auth-button primary" [disabled]="isLoading()">
-          <span *ngIf="!isLoading()">Iniciar Sesión</span>
-          <span *ngIf="isLoading()" class="loading-spinner">Entrando...</span>
+
+
+                <button type="submit" class="register-button primary" [disabled]="isLoading()">
+          <span *ngIf="!isLoading()">Sign Up</span>
+          <span *ngIf="isLoading()" class="loading-spinner">Creando cuenta...</span>
         </button>
             </form>
 
-            <!-- Enlace a Registro -->
-            <div class="auth-switch">
-                <p>¿No tienes una cuenta?
-                    <a routerLink="/register" class="switch-link">Regístrate aquí</a>
+            <!-- Enlace a Login -->
+            <div class="register-switch">
+                <p>¿Ya tienes una cuenta?
+                    <a routerLink="/login" class="switch-link">Inicia sesión aquí</a>
                 </p>
             </div>
         </div>

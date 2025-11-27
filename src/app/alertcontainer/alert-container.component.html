@@ -1,0 +1,4 @@
+<div class="alert-container">
+    @for (alert of alerts(); track alert.id) {
+    <app-alert [alert]="alert" [onClose]="removeAlert.bind(this)" /> }
+</div>

@@ -1,0 +1,20 @@
+<div class="alert" [class]="'alert--' + alert().type">
+    <div class="alert__content">
+        <div class="alert__icon">{{ icon }}</div>
+
+        <div class="alert__body">
+            <h4 class="alert__title">{{ alert().title }}</h4>
+            <p *ngIf="alert().message" class="alert__message">{{ alert().message }}</p>
+        </div>
+
+        <button *ngIf="alert().dismissible" class="alert__close" (click)="close()" aria-label="Cerrar alerta">
+      <span class="alert__close-icon">×</span>
+    </button>
+    </div>
+
+    <!-- Barra de progreso para alertas con duración -->
+    <div *ngIf="progressBarDuration > 0" class="alert__progress">
+        <div class="alert__progress-bar" [style.animation-duration]="progressBarDuration + 'ms'">
+        </div>
+    </div>
+</div>
