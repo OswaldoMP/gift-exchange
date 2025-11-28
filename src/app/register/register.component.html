@@ -1,63 +1,123 @@
-<div class="register-container">
-    <div class="register-background">
-        <!-- Elementos decorativos de regalos -->
-        <div class="floating-gift gift-1">🎁</div>
-        <div class="floating-gift gift-2">🎄</div>
-        <div class="floating-gift gift-3">🎀</div>
-        <div class="floating-gift gift-4">⭐</div>
-        <div class="floating-gift gift-5">🦌</div>
-        <div class="floating-gift gift-6">❄️</div>
+<section class="register-hero">
+    <div class="ambient-aurora"></div>
+    <div class="sparkles">
+        <span></span><span></span><span></span><span></span>
     </div>
 
-    <div class="register-card">
-        <!-- Header -->
-        <div class="register-header">
-            <div class="logo">
-                <span class="logo-icon">🎁</span>
-                <h1>SecretSanta</h1>
+    <div class="register-shell">
+        <section class="story-panel">
+            <div class="seal">
+                <span>🎄</span>
+                <div>
+                    <p>Club Navideño</p>
+                    <strong>Secret Santa Hub</strong>
+                </div>
             </div>
-            <p class="welcome-text">Forma parte de nuestro increíble equipo y diviértete con nosotros</p>
-        </div>
+            <h1>
+                Crea tu cuenta y desbloquea un tablero completo para coordinar el intercambio navideño.
+            </h1>
+            <p>
+                Diseñamos una experiencia moderna para sumar participantes, registrar ideas de regalos y compartir actualizaciones con banners informativos en cada etapa del evento.
+            </p>
 
-        <!-- Formulario de Registro -->
-        <div class="register-form">
-            <h2>Crear Cuenta</h2>
-
-            <form (ngSubmit)="onRegister()" class="form">
-                <div class="form-group">
-                    <label for="fullName" class="form-label">Nombre</label>
-                    <input type="text" id="fullName" [(ngModel)]="fullName" name="fullName" placeholder="Enter your full name" required class="form-input">
+            <div class="timeline">
+                <div>
+                    <p class="label">Convocatoria</p>
+                    <p class="value">{{startEvent()}}</p>
                 </div>
-
-                <div class="form-group">
-                    <label for="email" class="form-label">E-MAIL</label>
-                    <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Enter your e-mail address" required class="form-input">
+                <div>
+                    <p class="label">Carga de regalos</p>
+                    <p class="value">{{uploadGift()}}</p>
                 </div>
+                <div>
+                    <p class="label">Intercambio</p>
+                    <p class="value highlight"> {{dateEvent()}} </p>
+                </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <div class="password-input-container">
-                        <input [type]="showPassword() ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password" placeholder="Enter your password" required class="form-input password-input">
-                        <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
-              {{ showPassword() ? '🙈' : '👁️' }}
+            <div class="steps">
+                <div class="step">
+                    <span>1</span>
+                    <p>Completa tu perfil con nombre y avatar.</p>
+                </div>
+                <div class="step">
+                    <span>2</span>
+                    <p>Invita a tu equipo con un enlace privado.</p>
+                </div>
+                <div class="step">
+                    <span>3</span>
+                    <p>Agrega hasta cinco ideas de regalo y listo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="register-card">
+            <header>
+                <p class="eyebrow">Nuevo acceso</p>
+                <h2>Crea tu cuenta</h2>
+                <p>Solo tomará un minuto y podrás volver al panel en cualquier dispositivo.</p>
+            </header>
+
+            <form (ngSubmit)="onRegister()" class="form-grid">
+                <label class="field">
+          <span>Nombre completo</span>
+          <input
+            id="fullName"
+            name="fullName"
+            type="text"
+            [(ngModel)]="fullName"
+            placeholder="Ej. Sofía Morales"
+            required
+          />
+        </label>
+
+                <label class="field">
+          <span>Correo corporativo</span>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="email"
+            placeholder="sofia@tuempresa.com"
+            required
+          />
+        </label>
+
+                <label class="field">
+          <span>Contraseña</span>
+          <div class="password-field">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              id="password"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="Mínimo 8 caracteres"
+              required
+            />
+            <button type="button" (click)="togglePasswordVisibility()" aria-label="Mostrar contraseña">
+              {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
             </button>
-                    </div>
-                </div>
+          </div>
+        </label>
 
-
-
-                <button type="submit" class="register-button primary" [disabled]="isLoading()">
-          <span *ngIf="!isLoading()">Sign Up</span>
-          <span *ngIf="isLoading()" class="loading-spinner">Creando cuenta...</span>
+                <button type="submit" class="cta" [disabled]="isLoading()">
+          <span *ngIf="!isLoading()">Crear cuenta y continuar</span>
+          <span *ngIf="isLoading()" class="loading">Enviando...</span>
         </button>
             </form>
 
-            <!-- Enlace a Login -->
-            <div class="register-switch">
-                <p>¿Ya tienes una cuenta?
-                    <a routerLink="/login" class="switch-link">Inicia sesión aquí</a>
-                </p>
+            <div class="extras">
+                <div>
+                    <p>¿Ya participas?</p>
+                    <a routerLink="/login">Inicia sesión aquí</a>
+                </div>
+                <div class="security">
+                    <span>🔐</span>
+                    <p>
+                        Tus datos están protegidos. Recibirás un correo para confirmar tu acceso al intercambio.
+                    </p>
+                </div>
             </div>
-        </div>
+        </section>
     </div>
-</div>
+</section>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject} from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Participant } from '../models/participant-entity';
 import { Gift } from '../models/Gift';
 import { ParticipantServiceService } from '../services/participant-service.service';
@@ -17,7 +17,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 })
 export class ExchangeComponent implements OnInit {
 
-    private router = inject(Router);
+  private router = inject(Router);
 
   currentUser!: Participant;
   participants: Participant[] = [];
@@ -29,6 +29,12 @@ export class ExchangeComponent implements OnInit {
   newGift: Gift | null = null;
   userEmail: string = "";
   assignedFriend: any = "";
+
+  dateEvent = signal<string>("");
+  timeEvent = signal<string>("");
+  moneyEvent = signal<string>("");
+  startEvent = signal<string>("");
+  uploadGift = signal<string>("");
 
   constructor(
     public participantService: ParticipantServiceService,
@@ -47,7 +53,7 @@ export class ExchangeComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.snapshot.queryParamMap.get('email');
-    console.log("[EMAIL] => ", this.userEmail);
+    this.getInfoEvent();
   }
 
   // Computed
@@ -147,10 +153,20 @@ export class ExchangeComponent implements OnInit {
     } else {
       console.log("User successfully signed out.");
       // Optionally, redirect the user to a login page or home page
+      localStorage.clear();
       this.router.navigate(['/login']);
     }
   }
 
+  getInfoEvent() {
+    const event = JSON.parse(localStorage.getItem("event") as string);
+
+    this.dateEvent.set(event.date_event);
+    this.timeEvent.set(event.time_event);
+    this.moneyEvent.set(event.money_event);
+    this.startEvent.set(event.start_event);
+    this.uploadGift.set(event.upload_gift);
+  }
   // TODO
   // Crear una funcion que haga una animacion de ruleta para asignar el amigo secreto. Esta funcion se ejecutara por un boton
 

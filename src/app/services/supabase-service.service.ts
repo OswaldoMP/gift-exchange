@@ -10,6 +10,7 @@ import {
 import { environment } from '../../enviroments/enviroment'
 import { Participant, ParticipantEntity } from '../models/participant-entity'
 import { Gift, GiftEntity } from '../models/Gift'
+import { Exchanges } from '../models/exchanges.entity';
 
 export interface Profile {
   id?: string
@@ -58,11 +59,13 @@ export class SupabaseService {
   }
 
   signUp(email: string, password: string, username: string) {
-    return this.supabase.auth.signUp({email, password, options: {
-      data: {
-        username
+    return this.supabase.auth.signUp({
+      email, password, options: {
+        data: {
+          username
+        }
       }
-    }});
+    });
   }
 
   updateProfile(profile: Profile) {
@@ -106,7 +109,7 @@ export class SupabaseService {
       });
 
       for (let participant of p as Participant[]) {
-        const participantId : number = participant.id as unknown as number;
+        const participantId: number = participant.id as unknown as number;
         const giftData = await this.getGift(participantId);
 
         const gifts: Gift[] = giftData
@@ -141,16 +144,16 @@ export class SupabaseService {
       const giftData = await this.getGift(data[0].id);
 
       const gifts: Gift[] = giftData
-      .filter(g => g.removed != 1)
-      .map(g => {
-        const gMap: Gift = {
-          id: g.id,
-          title: g.title,
-          link: g.link,
-          store: g.store
-        }
-        return gMap;
-      });
+        .filter(g => g.removed != 1)
+        .map(g => {
+          const gMap: Gift = {
+            id: g.id,
+            title: g.title,
+            link: g.link,
+            store: g.store
+          }
+          return gMap;
+        });
 
       const p: Participant = {
         id: data[0].id,
@@ -240,13 +243,36 @@ export class SupabaseService {
     }
   }
 
-    async updatedParticipantToReady(id: string, isReady: boolean): Promise<any> {
+  async updatedParticipantToReady(id: string, isReady: boolean): Promise<any> {
     try {
-      const { data, error } = await this.supabase.from('participants').update({is_ready: isReady}).eq('oauth_id', id);
+      const { data, error } = await this.supabase.from('participants').update({ is_ready: isReady }).eq('oauth_id', id);
       if (error) {
         throw error;
       }
       return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getInfoEvent(): Promise<Exchanges> {
+    try {
+      const { data, error } = await this.supabase.from('exchanges').select("*").eq('id', 1);
+      if (error) {
+        throw error;
+      }
+      console.log("Event", data)
+      const exchange: Exchanges = {
+        id: data[0].id,
+        date_event: data[0].date_event,
+        money_event: data[0].money_event,
+        start_event: data[0].start_event,
+        time_event: data[0].time_event,
+        upload_gift: data[0].upload_gift
+      }
+      
+      localStorage.setItem("event", JSON.stringify(exchange));
+      return exchange;
     } catch (error) {
       throw error;
     }

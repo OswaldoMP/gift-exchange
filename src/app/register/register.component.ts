@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { SupabaseService } from '../services/supabase-service.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit{
   private alertService = inject(AlertService);
   private supabaseService = inject(SupabaseService);
   private router = inject(Router);
@@ -23,6 +23,16 @@ export class RegisterComponent {
   password = signal<string>('');
   showPassword = signal<boolean>(false);
   isLoading = signal<boolean>(false);
+
+  dateEvent = signal<string>("");
+  timeEvent = signal<string>("");
+  moneyEvent = signal<string>("");
+  startEvent = signal<string>("");
+  uploadGift = signal<string>("");
+
+  ngOnInit(): void {
+    this.getInfoEvent(); 
+  }
 
   togglePasswordVisibility(): void {
     this.showPassword.set(!this.showPassword());
@@ -74,5 +84,15 @@ export class RegisterComponent {
       avatarUrl: ""
     });
 
+  }
+
+  getInfoEvent() {
+    const event = JSON.parse(localStorage.getItem("event") as string);
+
+    this.dateEvent.set(event.date_event);
+    this.timeEvent.set(event.time_event);
+    this.moneyEvent.set(event.money_event);
+    this.startEvent.set(event.start_event);
+    this.uploadGift.set(event.upload_gift);
   }
 }

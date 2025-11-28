@@ -1,55 +1,97 @@
-<div class="auth-container">
-    <div class="auth-background">
-        <!-- Elementos decorativos de regalos -->
-        <div class="floating-gift gift-1">🎁</div>
-        <div class="floating-gift gift-2">🎄</div>
-        <div class="floating-gift gift-3">🎀</div>
-        <div class="floating-gift gift-4">⭐</div>
-        <div class="floating-gift gift-5">🦌</div>
+<section class="holiday-auth">
+    <div class="snowfall">
+        <span class="snowflake s1">✼</span>
+        <span class="snowflake s2">❆</span>
+        <span class="snowflake s3">✻</span>
+        <span class="snowflake s4">❅</span>
+        <span class="snowflake s5">✼</span>
     </div>
 
-    <div class="auth-card">
-        <!-- Header -->
-        <div class="auth-header">
-            <div class="logo">
-                <span class="logo-icon">🎁</span>
-                <h1>SecretSanta</h1>
+    <div class="fairy-lights">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="auth-shell">
+        <section class="hero-panel">
+            <div class="brand-chip">Intercambio 2025</div>
+            <h1>
+                Vive el
+                <span>espíritu navideño</span> con tu equipo
+            </h1>
+            <p>
+                Coordina el sorteo, comparte ideas de regalos y mantén a tu tribu conectada desde un único espacio.
+            </p>
+
+            <div class="hero-banner">
+                <div>
+                    <p class="banner-label">Próximo sorteo</p>
+                    <p class="banner-value">{{startEvent()}} · {{timeEvent()}}</p>
+                </div>
+                <div>
+                    <p class="banner-label">Presupuesto sugerido</p>
+                    <p class="banner-value">{{moneyEvent()}}</p>
+                </div>
             </div>
-            <p class="welcome-text">¡La diversión del intercambio comienza aquí!</p>
-        </div>
 
-        <!-- Formulario de Login -->
-        <div class="auth-form">
-            <h2>Iniciar Sesión</h2>
+            <ul class="hero-list">
+                <li>🎁 Guarda hasta cinco ideas de regalos por participante.</li>
+            </ul>
 
-            <form (ngSubmit)="onLogin()" class="form">
-                <div class="form-group">
-                    <label for="email" class="form-label">E-MAIL</label>
-                    <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Enter your e-mail address" required class="form-input">
+        </section>
+
+        <section class="form-panel glass-card">
+            <div class="form-header">
+                <div>
+                    <p class="eyebrow">Centro de control</p>
+                    <h2>Inicia sesión</h2>
+                    <p class="subtitle">
+                        Ingresa tus credenciales para continuar organizando el intercambio.
+                    </p>
                 </div>
+                <div class="badge warm">🎅 Seguridad reforzada</div>
+            </div>
 
-                <div class="form-group">
-                    <label for="password" class="form-label">PASSWORD</label>
-                    <div class="password-input-container">
-                        <input [type]="showPassword() ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password" placeholder="Enter your password" required class="form-input password-input">
-                        <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
-              {{ showPassword() ? '🙈' : '👁️' }}
+            <form (ngSubmit)="onLogin()" class="form-grid">
+                <label class="field">
+          <span>E-mail</span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="navidad@tuempresa.com"
+            required
+          />
+        </label>
+
+                <label class="field">
+          <span>Password</span>
+          <div class="password-field">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              id="password"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="••••••••"
+              required
+            />
+            <button type="button" class="ghost" (click)="togglePasswordVisibility()" aria-label="Mostrar contraseña">
+              {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
             </button>
-                    </div>
-                </div>
+          </div>
+        </label>
 
-                <button type="submit" class="auth-button primary" [disabled]="isLoading()">
-          <span *ngIf="!isLoading()">Iniciar Sesión</span>
-          <span *ngIf="isLoading()" class="loading-spinner">Entrando...</span>
+
+                <button type="submit" class="cta" [disabled]="isLoading()">
+          <span *ngIf="!isLoading()">Entrar al intercambio</span>
+          <span *ngIf="isLoading()" class="loading">Conectando...</span>
         </button>
             </form>
 
-            <!-- Enlace a Registro -->
-            <div class="auth-switch">
-                <p>¿No tienes una cuenta?
-                    <a routerLink="/register" class="switch-link">Regístrate aquí</a>
-                </p>
-            </div>
-        </div>
+            <footer class="panel-footer">
+                <p>¿Aún no tienes acceso?</p>
+                <a routerLink="/register">Crea una cuenta y comparte la lista con tu equipo.</a>
+            </footer>
+        </section>
     </div>
-</div>
+</section>
