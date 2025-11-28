@@ -85,7 +85,7 @@ export class SupabaseService {
 
   // CRUD
   async getParticipants(value: string): Promise<Participant[]> {
-    console.log("[getParticipants FIND BY] => ", name);
+    console.log("[getParticipants FIND BY] => ", value);
     try {
       const { data, error } = await this.supabase.from('participants').select("*").isDistinct("oauth_id", value);
       if (error) {
@@ -94,14 +94,29 @@ export class SupabaseService {
 
       console.log("[DATA SUPABASE SELECTO ALL] => ", data);
       const p: Participant[] = data.map(v => {
+        
+      const giftData = await this.getGift(v.id);
+
+      const gifts: Gift[] = giftData
+      .filter(g => g.removed != 1)
+      .map(g => {
+        const gMap: Gift = {
+          id: g.id,
+          title: g.title,
+          link: g.link,
+          store: g.store
+        }
+        return gMap;
+      });
+
         const pMap: Participant = {
           id: v.id,
           name: v.name,
-          gifts: [],
+          gifts,
           avatarUrl: ""
         }
         return pMap;
-      })
+      });
       return p;
     } catch (error) {
       console.log("[ERROR] => ", error);
@@ -129,7 +144,7 @@ export class SupabaseService {
           store: g.store
         }
         return gMap;
-      })
+      });
 
       const p: Participant = {
         id: data[0].id,

@@ -37,7 +37,7 @@ export class ExchangeComponent implements OnInit {
     supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
       this.currentUser = res;
     });
-    supabaseService.getParticipants(this.userEmail).then(res => {
+    supabaseService.getParticipants(localStorage.getItem("uuid") as string).then(res => {
       this.participants = res;
     });
     this.drawResult = participantService.getDrawnStatu();
