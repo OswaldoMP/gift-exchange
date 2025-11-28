@@ -99,7 +99,8 @@ export class SupabaseService {
           id: v.id,
           name: v.name,
           gifts: [],
-          avatarUrl: ""
+          avatarUrl: "",
+          is_ready: v.is_ready,
         }
         return pMap;
       });
@@ -155,7 +156,9 @@ export class SupabaseService {
         id: data[0].id,
         gifts,
         name: data[0].name,
-        avatarUrl: ""
+        avatarUrl: "",
+        is_ready: data[0].is_ready,
+        friend_id: data[0].friend_id,
       }
       return p;
     } catch (error) {
@@ -233,6 +236,18 @@ export class SupabaseService {
       return data;
     } catch (error) {
       console.log("[ERROR] => ", error);
+      throw error;
+    }
+  }
+
+    async updatedParticipantToReady(id: string, isReady: boolean): Promise<any> {
+    try {
+      const { data, error } = await this.supabase.from('participants').update({is_ready: isReady}).eq('oauth_id', id);
+      if (error) {
+        throw error;
+      }
+      return data;
+    } catch (error) {
       throw error;
     }
   }

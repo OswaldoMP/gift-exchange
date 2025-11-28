@@ -21,13 +21,14 @@ export class ExchangeComponent implements OnInit {
 
   currentUser!: Participant;
   participants: Participant[] = [];
-  drawResult: boolean = false;
+  drawResult: any = false;
 
 
   expandedUserId: string | null = null;
   selectedGift: Gift | null = null;
   newGift: Gift | null = null;
   userEmail: string = "";
+  assignedFriend: any = "";
 
   constructor(
     public participantService: ParticipantServiceService,
@@ -36,11 +37,12 @@ export class ExchangeComponent implements OnInit {
   ) {
     supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
       this.currentUser = res;
+      this.drawResult = this.currentUser.is_ready;
+      this.assignedFriend = this.currentUser.friend_id;
     });
     supabaseService.getParticipants(localStorage.getItem("uuid") as string).then(res => {
       this.participants = res;
     });
-    this.drawResult = participantService.getDrawnStatu();
   }
 
   ngOnInit(): void {
@@ -58,7 +60,7 @@ export class ExchangeComponent implements OnInit {
   get myAssignedFriend(): Participant | null {
     if (!this.isDrawn) return null;
 
-    return this.participants.find(p => p.id === "2") || null;
+    return this.participants.find(p => p.id === this.assignedFriend) || null;
   }
 
   get canAddGift(): boolean {
@@ -102,9 +104,11 @@ export class ExchangeComponent implements OnInit {
 
 
   // Placeholder: función para disparar el sorteo (probablemente en el backend)
-  requestDraw() {
+  async requestDraw() {
     // emit event o llamada a servicio; aquí solo un ejemplo de cómo se podría indicar
     console.log('Solicitar sorteo al backend...');
+    await this.supabaseService.updatedParticipantToReady(localStorage.getItem("uuid") as string, true);
+    this.drawResult = true;
   }
 
   addGift(gift: Gift) {
@@ -146,6 +150,9 @@ export class ExchangeComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
+
+  // TODO
+  // Crear una funcion que haga una animacion de ruleta para asignar el amigo secreto. Esta funcion se ejecutara por un boton
 
 }
 
