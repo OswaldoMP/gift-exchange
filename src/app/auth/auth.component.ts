@@ -143,7 +143,7 @@ export class AuthComponent implements OnInit {
         );
         return;
       }
-    })
+    });
 
   }
 
@@ -163,10 +163,10 @@ export class AuthComponent implements OnInit {
     if (error) {
       console.log(error.message)
 
-      if(error.message === "Email not confirmed") {
+      if (error.message === "Email not confirmed") {
         this.alertService.info("Correo no confirmado", `Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!`);
-      } else if(error.message === 'Invalid login credentials'){
-        this.alertService.error("Datos incorrectos", `Correo o password incorrectos`, 4000);  
+      } else if (error.message === 'Invalid login credentials') {
+        this.alertService.error("Datos incorrectos", `Correo o password incorrectos`, 4000);
       }
 
       this.isLoading.set(false);

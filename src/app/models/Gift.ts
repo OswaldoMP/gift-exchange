@@ -8,8 +8,9 @@ export interface Gift {
 
 export interface GiftEntity {
   id?: number,
-  participant_id: number,
+  participant_id?: string,
   title?: string,
   store?: string,
-  link?: string
+  link?: string,
+  removed?: number
 }

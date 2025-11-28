@@ -55,10 +55,24 @@ export class RegisterComponent {
       `${this.fullName()}!`,
       'Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!'
     );
-    
+
+    console.log("[registro] => ", data)
+    this.setLocalStorage(data);
     setTimeout(() => {
       this.router.navigate(['/login']);
     }, 3800);
-  
+
+  }
+
+  async setLocalStorage(data: any) {
+    localStorage.setItem("uuid", data.user.id);
+    localStorage.setItem("username", data.user.user_metadata['username']);
+    this.supabaseService.saveParticipant({
+      oauth_id: data.user.id,
+      gifts: [],
+      name: data.user.user_metadata['username'],
+      avatarUrl: ""
+    });
+
   }
 }

@@ -102,7 +102,7 @@
             <button class="modal-close" (click)="closeGift()">×</button>
             <div class="actions">
                 <div>
-                    <button class="btn success" (click)="addGift(selectedGift)">Guardar</button>
+                    <button class="btn success" (click)="updateGift(selectedGift)">Guardar</button>
                 </div>
                 <div>
                     <button class="btn danger" (click)="removeGift(selectedGift)">Eliminar</button>
@@ -114,7 +114,7 @@
                     <div>
                         <div class="p-name">Nombre:</div>
                         <div class="p-gifts">
-                            <input class="participant-card" type="text" [value]="selectedGift.title">
+                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.title">
                         </div>
                     </div>
                 </div>
@@ -125,7 +125,7 @@
                     <div>
                         <div class="p-name">Tienda:</div>
                         <div class="p-gifts">
-                            <input class="participant-card" type="text" [value]="selectedGift.store">
+                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.store">
                         </div>
                     </div>
                 </div>
@@ -135,7 +135,7 @@
                     <div>
                         <div class="p-name">Link:</div>
                         <div class="p-gifts">
-                            <input class="participant-card" type="text" [value]="selectedGift.link">
+                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.link">
                         </div>
                     </div>
                 </div>

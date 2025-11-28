@@ -29,11 +29,8 @@ export class SupabaseService {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey)
   }
 
-  get session() {
-    this.supabase.auth.getSession().then(({ data }) => {
-      this._session = data.session
-    })
-    return this._session
+  getSession(): Promise<any> {
+    return this.supabase.auth.getSession();
   }
 
   profile(user: User) {
@@ -87,10 +84,10 @@ export class SupabaseService {
 
 
   // CRUD
-  async getParticipants(name: string): Promise<Participant[]> {
+  async getParticipants(value: string): Promise<Participant[]> {
     console.log("[getParticipants FIND BY] => ", name);
     try {
-      const { data, error } = await this.supabase.from('participants').select("*").isDistinct("name", name);
+      const { data, error } = await this.supabase.from('participants').select("*").isDistinct("oauth_id", value);
       if (error) {
         throw error;
       }
@@ -112,17 +109,19 @@ export class SupabaseService {
     }
   }
 
-  async getParticipant(name: string): Promise<Participant> {
+  async getParticipant(value: string): Promise<Participant> {
     console.log("[getParticipant FIND BY] => ", name);
     try {
-      const { data, error } = await this.supabase.from('participants').select("*").eq("name", name);
+      const { data, error } = await this.supabase.from('participants').select("*").eq("oauth_id", value);
       if (error) {
         throw error;
       }
       console.log("[DATA PARTICIPANT] => ", data);
       const giftData = await this.getGift(data[0].id);
 
-      const gifts: Gift[] = giftData.map(g => {
+      const gifts: Gift[] = giftData
+      .filter(g => g.removed != 1)
+      .map(g => {
         const gMap: Gift = {
           id: g.id,
           title: g.title,
@@ -149,7 +148,7 @@ export class SupabaseService {
     try {
       const p: ParticipantEntity = {
         name: participant.name,
-        oauth_id: participant.auth_id
+        oauth_id: participant.oauth_id
       }
       const { data, error } = await this.supabase.from('participants').insert([p]);
       if (error) {
@@ -163,7 +162,7 @@ export class SupabaseService {
     }
   }
 
-  async saveGift(gift: Gift, participant_id: number): Promise<any> {
+  async saveGift(gift: Gift, participant_id: string): Promise<any> {
     try {
       const g: GiftEntity = {
         participant_id,
@@ -197,14 +196,15 @@ export class SupabaseService {
     }
   }
 
-  async updateGift(gift: Gift, participant_id: number): Promise<any> {
+  async updateGift(gift: Gift, removed: number): Promise<any> {
     try {
       const g: GiftEntity = {
-        participant_id,
         link: gift.link,
         title: gift.title,
         store: gift.store,
+        removed
       }
+
       const { data, error } = await this.supabase.from('gift').update(g).eq('id', gift.id);
       if (error) {
         throw error;

@@ -34,7 +34,7 @@ export class ExchangeComponent implements OnInit {
     public supabaseService: SupabaseService,
     public route: ActivatedRoute
   ) {
-    supabaseService.getParticipant(this.userEmail).then(res => {
+    supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
       this.currentUser = res;
     });
     supabaseService.getParticipants(this.userEmail).then(res => {
@@ -95,7 +95,9 @@ export class ExchangeComponent implements OnInit {
     document.body.style.overflow = '';
 
     // Refresh
-    // this.currentUser = this.participantService.getCurrentParticipant();
+    this.supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
+      this.currentUser = res;
+    });
   }
 
 
@@ -106,15 +108,21 @@ export class ExchangeComponent implements OnInit {
   }
 
   addGift(gift: Gift) {
-    this.participantService.addNewGift(gift);
-    this.supabaseService.saveGift(gift, Number(this.currentUser.id))
+    console.log("current user => ", this.currentUser)
+    this.supabaseService.saveGift(gift, this.currentUser.id as string)
     this.closeGift();
   }
 
   removeGift(gift: Gift) {
-    this.participantService.removeGift(gift);
+    this.supabaseService.updateGift(gift, 1);
     this.closeGift();
   }
+
+  updateGift(gift: Gift) {
+    this.supabaseService.updateGift(gift, 0);
+    this.closeGift();
+  }
+
 
   addParticiapant() {
     const participant: Participant = {

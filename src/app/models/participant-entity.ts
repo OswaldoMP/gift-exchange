@@ -5,7 +5,7 @@ export interface Participant {
   name?: string;
   avatarUrl?: string;
   gifts: Gift[];
-  auth_id?: string
+  oauth_id?: string
 }
 
 export interface ParticipantEntity {
