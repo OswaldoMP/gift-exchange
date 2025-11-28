@@ -1,301 +1,91 @@
-.amigo-secreto-root {
-    font-family: Inter, Roboto, system-ui, Arial, sans-serif;
-    color: #1f2937;
-    max-width: 1100px;
-    margin: 24px auto;
-    padding: 12px;
+.christmas-wrapper {
+  position: relative;
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+  animation: fadeIn 1s ease;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
+.christmas-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    #0f3d2e 0%,      /* verde pino oscuro */
+    #145f3a 30%,     /* verde esmeralda suave */
+    #1c7c54 100%     /* verde navideño cálido */
+  );
+  overflow: hidden;
 }
 
-.user-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* Regalos flotantes con toques dorados elegantes */
+.floating-gift {
+  position: absolute;
+  font-size: 2rem;
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.88;
+  color: #f3d9a4; /* dorado cálido */
 }
 
-.avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 10px;
-    object-fit: cover;
+.gift-1 { top: 10%; left: 5%; animation-delay: 0s; }
+.gift-2 { top: 20%; right: 12%; animation-delay: 1s; }
+.gift-3 { top: 60%; left: 10%; animation-delay: 2s; }
+.gift-4 { bottom: 20%; right: 20%; animation-delay: 3s; }
+.gift-5 { top: 40%; left: 45%; animation-delay: 4s; }
+.gift-6 { bottom: 10%; left: 30%; animation-delay: 5s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
 }
 
-.avatar-sm {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    object-fit: cover;
+.christmas-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-radius: 22px;
+  border: 1px solid rgba(243, 217, 164, 0.35); /* dorado suave */
+  box-shadow: 0 8px 32px rgba(176, 42, 55, 0.25); /* rojo vino pero sutil */
+  backdrop-filter: blur(14px);
 }
 
-.avatar-lg {
-    width: 64px;
-    height: 64px;
-    border-radius: 12px;
-    object-fit: cover;
-}
-
+/* Títulos con degradado navideño elegante */
+.panel-title,
+.sub-title,
 .name {
-    font-weight: 600;
-    font-size: 16px;
+  background: linear-gradient(
+    125deg,
+    #b02a37,     /* rojo vino */ #ea3d4e,     /* dorado cálido */ #ec616c /* verde suave */
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.meta {
-    font-size: 13px;
-    color: #6b7280;
+/* Botón glow navideño */
+.btn.glow {
+  box-shadow:
+    0 0 10px rgba(243, 217, 164, 0.8),   /* dorado */
+    0 0 18px rgba(176, 42, 55, 0.5);      /* rojo */
 }
 
-.actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+/* Bordes neón sutil estilo navidad */
+.neon-border {
+  border-color: #f3d9a4 !important; /* dorado */
 }
 
-.actions-details {
-    display: flex;
-    gap: 50px;
-    align-items: center;
-}
-
-.status {
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #f3f4f6;
-    color: #374151;
-    font-size: 14px;
-}
-
-.status.drawn {
-    background: linear-gradient(90deg, #d1fae5, #bbf7d0);
-    color: #065f46;
-}
-
-.btn {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-}
-
-.btn.secondary {
-    background: #eef2ff;
-    color: #3730a3;
-}
-
-.btn.success {
-    background: linear-gradient(90deg, #d1fae5, #bbf7d0);
-    color: #065f46;
-}
-
-.btn.danger {
-    background: linear-gradient(90deg, #fad1d1, #f7bbbb);
-    color: #065f46;
-}
-
-.btn.link {
-    background: transparent;
-    color: #3b82f6;
-    border: 1px solid transparent;
-}
-
-.btn[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 18px;
-}
-
-.panel {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-}
-
-.my-gifts h3,
-.others h3 {
-    margin-top: 0;
-}
-
-.gift-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
+/* Icono de regalo al final de cada item */
 .gift-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 1px solid transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.gift-item:hover {
-    background: #f8fafc;
-    border-color: #e6eef8;
+.gift-icon {
+  font-size: 1.6rem;
+  opacity: 0.9;
+  margin-left: 10px;
+  transition: transform 0.25s ease;
 }
 
-.gift-thumb {
-    width: 56px;
-    height: 56px;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.gift-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.gift-title {
-    font-weight: 600;
-}
-
-.gift-sub {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.hint {
-    font-size: 12px;
-    color: #9ca3af;
-    margin-top: 8px;
-}
-
-.participants {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.participant-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #eef2ff;
-}
-
-.participant-left {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.expand {
-    margin-top: 8px;
-}
-
-.mini-gifts {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.mini-gifts li {
-    background: #f1f5f9;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.assigned-card {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #e6f4ea;
-    background: #f8fffb;
-}
-
-
-/* Modal */
-
-.modal {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 60;
-}
-
-.modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-}
-
-.modal-card {
-    position: relative;
-    background: white;
-    padding: 18px;
-    border-radius: 12px;
-    width: min(560px, 92%);
-    box-shadow: 0 8px 30px rgba(2, 6, 23, 0.3);
-    z-index: 70;
-}
-
-.modal-image {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.modal-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    border: none;
-    background: transparent;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.description {
-    margin-top: 12px;
-    color: #374151;
-}
-
-.muted {
-    color: #6b7280;
-    font-size: 13px;
-}
-
-
-/* Responsive */
-
-@media (max-width: 900px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    .gift-list {
-        grid-template-columns: 1fr 1fr;
-    }
+/* Efecto coqueto al pasar el mouse */
+.gift-item:hover .gift-icon {
+  transform: scale(1.15);
 }

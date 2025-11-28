@@ -1,1 +1,315 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===== Paleta Navideña Coqueta ===== */
+:root {
+  --primary: #b02a37;           /* rojo vino elegante */
+  --primary-dark: #8a1f2b;      /* rojo más profundo */
+  --bg-light: #f8f5ef;          /* blanco cálido */
+  --panel-bg: #ffffff;
+  --text-dark: #2e2e2e;
+  --text-muted: #7a7a7a;
+  --radius: 18px;
+  --shadow: 0 8px 22px rgba(0,0,0,0.08);
+
+  --xmas-green: #1c7c54;        /* verde navideño suave */
+  --xmas-gold: #f3d9a4;         /* dorado cálido */
+}
+
+/* ===== Base ===== */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-light);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-dark);
+}
+
+/* ===== Layout General ===== */
+.amigo-secreto-root {
+  padding: 20px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background: var(--panel-bg);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ===== Usuario ===== */
+.user-card {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.avatar {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--xmas-green);
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ===== Acciones Header ===== */
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status {
+  padding: 6px 14px;
+  background: #e7e7e7;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status.drawn {
+  background: var(--xmas-green);
+  color: white;
+}
+
+/* ===== Botones ===== */
+.btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+
+.btn.success {
+  background: var(--primary);     /* rojo navideño */
+  color: white;
+}
+
+.btn.success:hover {
+  background: var(--primary-dark);
+}
+
+.btn.secondary {
+  background: var(--xmas-gold);   /* doradito suave */
+  color: #6b3c26;                 /* café cálido */
+}
+
+.btn.danger {
+  background: #d62828;            /* rojo brillante pero elegante */
+  color: white;
+}
+
+.btn.link {
+  background: none;
+  color: var(--xmas-green);
+  box-shadow: none;
+  text-decoration: underline;
+}
+
+/* ===== Panels ===== */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.panel {
+  background: var(--panel-bg);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===== Listas ===== */
+.gift-list, .participants {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.gift-item, .participant-card {
+  background: #faf5f0;                         /* beige navideño */
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border-left: 4px solid var(--xmas-green);    /* detalle navideño */
+}
+
+.gift-item:hover, .participant-card:hover {
+  background: #f3e8d8;                         /* beige más cálido */
+  transform: translateX(4px);
+}
+
+.participant-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar-sm {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--xmas-green);
+}
+
+.p-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.p-gifts {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.gift-title {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.gift-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ===== Amigo Secreto Resultado ===== */
+.assigned-card {
+  display: flex;
+  gap: 16px;
+  padding: 15px;
+  background: #faf5f0;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  align-items: center;
+}
+
+.avatar-lg {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 3px solid var(--xmas-green);
+  object-fit: cover;
+}
+
+.assigned-info .name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* ===== Modales ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+}
+
+.modal-card {
+  position: relative;
+  background: var(--panel-bg);
+  padding: 25px;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  z-index: 3000;
+  animation: popIn 0.3s ease;
+  border-top: 5px solid var(--xmas-green); /* toque navideño */
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-close:hover {
+  color: var(--primary);
+}
+
+.modal-image {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: start;
+    gap: 15px;
+  }
+}

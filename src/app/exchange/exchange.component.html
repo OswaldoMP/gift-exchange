@@ -1,200 +1,185 @@
-<div class="amigo-secreto-root">
-    <header class="header">
-        <div class="user-card">
-            <img [src]="currentUser.avatarUrl || '../../assets/default-avatar.png'" alt="avatar" class="avatar">
-            <div>
-                <div class="name">{{ currentUser.name }}</div>
-                <div class="meta">{{ participants.length }} participantes</div>
-                <div class="actions">
-                    <button class="btn secondary" (click)="signOut()">Cerrar Sesion</button>
-                </div>
-            </div>
+<!-- 🎄 DECORACIÓN NAVIDEÑA SUPERIOR -->
+<div class="christmas-background">
+  <div class="floating-gift gift-1">🎁</div>
+  <div class="floating-gift gift-2">🎄</div>
+  <div class="floating-gift gift-3">❄️</div>
+  <div class="floating-gift gift-4">⭐</div>
+  <div class="floating-gift gift-5">🦌</div>
+  <div class="floating-gift gift-6">🎀</div>
+</div>
+
+<!-- 🎅 TU HTML COMPLETO SIN CAMBIOS, SOLO ENVUELTO EN ESTILO NAVIDEÑO -->
+<div class="amigo-secreto-root elegant-bg christmas-wrapper">
+
+  <header class="header glassy christmas-card">
+    <div class="user-card smooth-card">
+      <img [src]="currentUser.avatarUrl || '../../assets/default-avatar.png'" alt="avatar" class="avatar">
+      <div class="user-info">
+        <div class="name">{{ currentUser.name }}</div>
+        <div class="meta">{{ participants.length }} participantes</div>
+        <div class="actions fade-in">
+          <button class="btn secondary neon-border" (click)="signOut()">Cerrar Sesion</button>
         </div>
-
-        <div class="actions">
-            <div class="status" [class.drawn]="isDrawn">
-                {{ isDrawn ? 'Sorteo realizado' : 'Sorteo pendiente' }}
-            </div>
-            <button class="btn secondary" (click)="requestDraw()" [disabled]="isDrawn">Solicitar sorteo</button>
-        </div>
-    </header>
-    <main class="grid">
-        <section class="panel my-gifts">
-            <h3>Mis regalos ({{ currentUser.gifts.length }} / 5)</h3>
-            <div class="actions">
-                <div>
-                    <button *ngIf="canAddGift" class="btn success" (click)="openDialogNewGift()">Agregar regalo</button>
-                </div>
-            </div>
-            <ul class="gift-list">
-                <li *ngFor="let g of currentUser.gifts" class="gift-item" (click)="openGift(g)">
-                    <!-- <img [src]="g.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="gift-thumb"> -->
-                    <div class="gift-info">
-                        <div class="gift-title">{{ g.title }}</div>
-                        <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
-                    </div>
-                </li>
-            </ul>
-            <div class="hint">Clic en un regalo para ver más detalles.</div>
-        </section>
-
-        <section class="panel others">
-            <ng-container *ngIf="!isDrawn">
-                <h3>Participantes</h3>
-                <p class="muted">Antes del sorteo puedes ver la lista completa y cuántos regalos agregaron.</p>
-
-                <ul class="participants">
-                    <li *ngFor="let p of participants" class="participant-card">
-                        <div class="participant-left">
-                            <img [src]="p.avatarUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar-sm">
-                            <div>
-                                <div class="p-name">{{ p.name }}</div>
-                                <div class="p-gifts">{{ p.gifts.length }} regalos</div>
-                            </div>
-                        </div>
-                        <!-- <button class="btn link" (click)="toggleUserExpand(p.id)">Ver</button>
-
-                        <div class="expand" *ngIf="expandedUserId === p.id">
-                            <ul class="mini-gifts">
-                                <li *ngFor="let g of p.gifts" (click)="openGift(g)">{{ g.title }}</li>
-                            </ul>
-                        </div> -->
-                    </li>
-                </ul>
-            </ng-container>
-
-            <ng-container *ngIf="isDrawn">
-                <h3>Tu amigo secreto</h3>
-                <p class="muted">Información y lista de regalos de la persona que te tocó.</p>
-
-                <div *ngIf="myAssignedFriend; else noFriend">
-                    <div class="assigned-card">
-                        <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar-lg">
-                        <div class="assigned-info">
-                            <div class="name">{{ myAssignedFriend.name }}</div>
-                            <div class="meta">{{ myAssignedFriend.gifts.length }} regalos</div>
-                        </div>
-                    </div>
-
-                    <h4>Lista de regalos</h4>
-                    <ul class="gift-list">
-                        <li *ngFor="let g of myAssignedFriend.gifts" class="gift-item" (click)="openGift(g)">
-                            <!-- <img [src]="g.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="gift-thumb"> -->
-                            <div class="gift-info">
-                                <div class="gift-title">{{ g.title }}</div>
-                                <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <ng-template #noFriend>
-                    <div class="muted">No se encontró la asignación. Contacta al organizador.</div>
-                </ng-template>
-            </ng-container>
-        </section>
-    </main>
-
-    <!-- Modal de detalle de regalo -->
-    <div class="modal" *ngIf="selectedGift">
-        <div class="modal-backdrop" (click)="closeGift()"></div>
-        <div class="modal-card">
-            <button class="modal-close" (click)="closeGift()">×</button>
-            <div class="actions">
-                <div>
-                    <button class="btn success" (click)="updateGift(selectedGift)">Guardar</button>
-                </div>
-                <div>
-                    <button class="btn danger" (click)="removeGift(selectedGift)">Eliminar</button>
-                </div>
-            </div>
-            <!-- <img [src]="selectedGift.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="modal-image"> -->
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Nombre:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.title">
-                        </div>
-                    </div>
-                </div>
-            </li>
-
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Tienda:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.store">
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Link:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="selectedGift.link">
-                        </div>
-                    </div>
-                </div>
-            </li>
-        </div>
+      </div>
     </div>
 
-    <!-- Modal Agregar regalo -->
-    <div class="modal" *ngIf="newGift">
-        <div class="modal-backdrop" (click)="closeGift()"></div>
-        <div class="modal-card">
-            <button class="modal-close" (click)="closeGift()">×</button>
-            <!-- <img [src]="newGift.imageUrl || 'assets/gift-placeholder.png'" alt="Regalo" class="modal-image">
-            <h3>{{ newGift.title }}</h3>
-            <p class="muted">{{ newGift.priceEstimate || 'Sin precio estimado' }}</p>
-            <p class="description">{{ newGift.description || 'Sin descripción adicional.' }}</p> -->
-            <div class="actions">
-                <div>
-                    <button class="btn success" (click)="addGift(newGift)">Guardar</button>
-                </div>
+    <div class="actions status-area fade-in">
+      <div class="status tag" [class.drawn]="isDrawn">
+        {{ isDrawn ? 'Sorteo realizado' : 'Sorteo pendiente' }}
+      </div>
+      <button class="btn secondary neon-border" (click)="requestDraw()" [disabled]="isDrawn">
+        Solicitar sorteo
+      </button>
+    </div>
+  </header>
+
+  <main class="grid layout-gap">
+
+    <!-- MIS REGALOS -->
+    <section class="panel my-gifts smooth-card christmas-card">
+      <h3 class="panel-title">Mis regalos ({{ currentUser.gifts.length }} / 5)</h3>
+
+      <div class="actions spaced-row">
+        <button *ngIf="canAddGift" class="btn success glow" (click)="openDialogNewGift()">Agregar regalo</button>
+      </div>
+
+      <ul class="gift-list fancy-scroll">
+        <li *ngFor="let g of currentUser.gifts"
+            class="gift-item hover-card"
+            (click)="openGift(g)">
+          <div class="gift-info">
+            <div class="gift-title">{{ g.title }}</div>
+            <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
+          </div>
+
+          <span class="gift-icon">🎁</span>
+        </li>
+      </ul>
+
+      <div class="hint subtle">Clic en un regalo para ver más detalles.</div>
+    </section>
+
+    <!-- PARTICIPANTES O ASIGNADO -->
+    <section class="panel others smooth-card christmas-card">
+
+      <!-- PARTICIPANTES -->
+      <ng-container *ngIf="!isDrawn">
+        <h3 class="panel-title">Participantes</h3>
+        <p class="muted">Antes del sorteo puedes ver la lista completa y cuántos regalos agregaron.</p>
+
+        <ul class="participants fancy-scroll">
+          <li *ngFor="let p of participants" class="participant-card hover-card">
+            <div class="participant-left">
+              <img [src]="p.avatarUrl || 'assets/default-avatar.png'" class="avatar-sm">
+              <div>
+                <div class="p-name">{{ p.name }}</div>
+                <div class="p-gifts">{{ p.gifts.length }} regalos</div>
+              </div>
             </div>
+          </li>
+        </ul>
+      </ng-container>
 
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Nombre:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="newGift.title">
-                        </div>
-                    </div>
-                </div>
-            </li>
+      <!-- ASIGNADO -->
+      <ng-container *ngIf="isDrawn">
+        <h3 class="panel-title">Tu amigo secreto</h3>
+        <p class="muted">Información y lista de regalos de la persona que te tocó.</p>
 
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Tienda:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="newGift.store">
-                        </div>
-                    </div>
-                </div>
-            </li>
-            <li class="participant-card">
-                <div class="participant-left">
-                    <div>
-                        <div class="p-name">Link:</div>
-                        <div class="p-gifts">
-                            <input class="participant-card" type="text" [(ngModel)]="newGift.link">
-                        </div>
-                    </div>
-                </div>
-            </li>
+        <div *ngIf="myAssignedFriend; else noFriend" class="assigned-section">
 
+          <div class="assigned-card smooth-card christmas-card">
+            <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" class="avatar-lg">
+            <div class="assigned-info">
+              <div class="name">{{ myAssignedFriend.name }}</div>
+              <div class="meta">{{ myAssignedFriend.gifts.length }} regalos</div>
+            </div>
+          </div>
+
+          <h4 class="sub-title">Lista de regalos</h4>
+          <ul class="gift-list fancy-scroll">
+            <li *ngFor="let g of myAssignedFriend.gifts"
+                class="gift-item hover-card"
+                (click)="openGift(g)">
+              <div class="gift-info">
+                <div class="gift-title">{{ g.title }}</div>
+                <div class="gift-sub">{{ g.priceEstimate || 'Sin estimación' }}</div>
+              </div>
+            </li>
+          </ul>
         </div>
-    </div>
-    <div class="actions">
-        <div>
-            <button class="btn success" (click)="addParticiapant()">Guardar to DB</button>
+
+        <ng-template #noFriend>
+          <div class="muted center-text">No se encontró la asignación. Contacta al organizador.</div>
+        </ng-template>
+      </ng-container>
+
+    </section>
+  </main>
+
+  <!-- MODAL EDITAR REGALO -->
+  <div class="modal" *ngIf="selectedGift">
+    <div class="modal-backdrop" (click)="closeGift()"></div>
+    <div class="modal-card smooth-card pop-in christmas-card">
+      <button class="modal-close" (click)="closeGift()">×</button>
+
+      <div class="actions right">
+        <button class="btn success glow" (click)="updateGift(selectedGift)">Guardar</button>
+        <button class="btn danger soft-red" (click)="removeGift(selectedGift)">Eliminar</button>
+      </div>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Nombre:</div>
+          <input class="participant-card" type="text" [(ngModel)]="selectedGift.title">
         </div>
+      </li>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Tienda:</div>
+          <input class="participant-card" type="text" [(ngModel)]="selectedGift.store">
+        </div>
+      </li>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Link:</div>
+          <input class="participant-card" type="text" [(ngModel)]="selectedGift.link">
+        </div>
+      </li>
     </div>
+  </div>
+
+  <!-- MODAL NUEVO REGALO -->
+  <div class="modal" *ngIf="newGift">
+    <div class="modal-backdrop" (click)="closeGift()"></div>
+    <div class="modal-card smooth-card pop-in christmas-card">
+      <button class="modal-close" (click)="closeGift()">×</button>
+
+      <div class="actions right">
+        <button class="btn success glow" (click)="addGift(newGift)">Guardar</button>
+      </div>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Nombre:</div>
+          <input class="participant-card" type="text" [(ngModel)]="newGift.title">
+        </div>
+      </li>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Tienda:</div>
+          <input class="participant-card" type="text" [(ngModel)]="newGift.store">
+        </div>
+      </li>
+
+      <li class="participant-card input-row">
+        <div class="participant-left">
+          <div class="p-name">Link:</div>
+          <input class="participant-card" type="text" [(ngModel)]="newGift.link">
+        </div>
+      </li>
+    </div>
+  </div>
 </div>

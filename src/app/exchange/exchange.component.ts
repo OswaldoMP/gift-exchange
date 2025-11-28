@@ -18,7 +18,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 export class ExchangeComponent implements OnInit {
 
     private router = inject(Router);
-  
+
   currentUser!: Participant;
   participants: Participant[] = [];
   drawResult: boolean = false;

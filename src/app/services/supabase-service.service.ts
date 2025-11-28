@@ -94,29 +94,34 @@ export class SupabaseService {
 
       console.log("[DATA SUPABASE SELECTO ALL] => ", data);
       const p: Participant[] = data.map(v => {
-        
-      const giftData = await this.getGift(v.id);
-
-      const gifts: Gift[] = giftData
-      .filter(g => g.removed != 1)
-      .map(g => {
-        const gMap: Gift = {
-          id: g.id,
-          title: g.title,
-          link: g.link,
-          store: g.store
-        }
-        return gMap;
-      });
 
         const pMap: Participant = {
           id: v.id,
           name: v.name,
-          gifts,
+          gifts: [],
           avatarUrl: ""
         }
         return pMap;
       });
+
+      for (let participant of p as Participant[]) {
+        const participantId : number = participant.id as unknown as number;
+        const giftData = await this.getGift(participantId);
+
+        const gifts: Gift[] = giftData
+          .filter(g => g.removed != 1)
+          .map(g => {
+            const gMap: Gift = {
+              id: g.id,
+              title: g.title,
+              link: g.link,
+              store: g.store
+            }
+            return gMap;
+          });
+
+        participant.gifts = gifts;
+      }
       return p;
     } catch (error) {
       console.log("[ERROR] => ", error);
@@ -125,7 +130,7 @@ export class SupabaseService {
   }
 
   async getParticipant(value: string): Promise<Participant> {
-    console.log("[getParticipant FIND BY] => ", name);
+    console.log("[getParticipant FIND BY] => ", value);
     try {
       const { data, error } = await this.supabase.from('participants').select("*").eq("oauth_id", value);
       if (error) {
