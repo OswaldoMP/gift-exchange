@@ -7,7 +7,8 @@ export interface Participant {
   gifts: Gift[],
   oauth_id?: string,
   is_ready?: boolean,
-  friend_id?: string
+  friend_id?: string,
+  is_admin?: string
 }
 
 export interface ParticipantEntity {
@@ -15,5 +16,6 @@ export interface ParticipantEntity {
     name?: string,
     friend_id?: number,
     oauth_id?: string,
-    is_ready?: boolean
+    is_ready?: boolean,
+    is_admin?: boolean
 }

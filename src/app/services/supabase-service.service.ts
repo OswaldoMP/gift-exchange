@@ -88,14 +88,11 @@ export class SupabaseService {
 
   // CRUD
   async getParticipants(value: string): Promise<Participant[]> {
-    console.log("[getParticipants FIND BY] => ", value);
     try {
       const { data, error } = await this.supabase.from('participants').select("*").isDistinct("oauth_id", value);
       if (error) {
         throw error;
       }
-
-      console.log("[DATA SUPABASE SELECTO ALL] => ", data);
       const p: Participant[] = data.map(v => {
 
         const pMap: Participant = {
@@ -128,19 +125,51 @@ export class SupabaseService {
       }
       return p;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] getParticipants error", error);
+      throw error;
+    }
+  }
+
+  async getAllParticipants(): Promise<Participant[]> {
+    try {
+      const { data, error } = await this.supabase.from('participants').select("*");
+      if (error) {
+        throw error;
+      }
+
+      const participants: Participant[] = [];
+      for (const record of data) {
+        const giftsData = await this.getGift(record.id);
+        const gifts: Gift[] = giftsData
+          .filter(g => g.removed != 1)
+          .map(g => ({
+            id: g.id,
+            title: g.title,
+            link: g.link,
+            store: g.store
+          }));
+        participants.push({
+          id: record.id,
+          name: record.name,
+          avatarUrl: "",
+          is_ready: record.is_ready,
+          friend_id: record.friend_id,
+          gifts
+        });
+      }
+      return participants;
+    } catch (error) {
+      console.error("[SupabaseService] getAllParticipants error", error);
       throw error;
     }
   }
 
   async getParticipant(value: string): Promise<Participant> {
-    console.log("[getParticipant FIND BY] => ", value);
     try {
       const { data, error } = await this.supabase.from('participants').select("*").eq("oauth_id", value);
       if (error) {
         throw error;
       }
-      console.log("[DATA PARTICIPANT] => ", data);
       const giftData = await this.getGift(data[0].id);
 
       const gifts: Gift[] = giftData
@@ -162,10 +191,11 @@ export class SupabaseService {
         avatarUrl: "",
         is_ready: data[0].is_ready,
         friend_id: data[0].friend_id,
+        is_admin: data[0].is_admin
       }
       return p;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] getParticipant error", error);
       throw error;
     }
   }
@@ -180,10 +210,9 @@ export class SupabaseService {
       if (error) {
         throw error;
       }
-      console.log("[DATA SUPABASE] => ", data);
       return data;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] saveParticipant error", error);
       throw error;
     }
   }
@@ -200,10 +229,9 @@ export class SupabaseService {
       if (error) {
         throw error;
       }
-      console.log("[DATA SUPABASE] => ", data);
       return data;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] saveGift error", error);
       throw error;
     }
   }
@@ -214,10 +242,9 @@ export class SupabaseService {
       if (error) {
         throw error;
       }
-      console.log("[DATA SUPABASE] => ", data);
       return data;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] getGift error", error);
       throw error;
     }
   }
@@ -235,10 +262,9 @@ export class SupabaseService {
       if (error) {
         throw error;
       }
-      console.log("[DATA SUPABASE] => ", data);
       return data;
     } catch (error) {
-      console.log("[ERROR] => ", error);
+      console.error("[SupabaseService] updateGift error", error);
       throw error;
     }
   }
@@ -251,6 +277,7 @@ export class SupabaseService {
       }
       return data;
     } catch (error) {
+      console.error("[SupabaseService] updatedParticipantToReady error", error);
       throw error;
     }
   }
@@ -261,7 +288,6 @@ export class SupabaseService {
       if (error) {
         throw error;
       }
-      console.log("Event", data)
       const exchange: Exchanges = {
         id: data[0].id,
         date_event: data[0].date_event,
@@ -274,6 +300,22 @@ export class SupabaseService {
       localStorage.setItem("event", JSON.stringify(exchange));
       return exchange;
     } catch (error) {
+      console.error("[SupabaseService] getInfoEvent error", error);
+      throw error;
+    }
+  }
+
+  async assignSecretSanta(assignments: { id: string, friend_id: string }[]): Promise<void> {
+    try {
+      const operations = assignments.map(assign =>
+        this.supabase
+          .from('participants')
+          .update({ friend_id: assign.friend_id })
+          .eq('id', assign.id)
+      );
+      await Promise.all(operations);
+    } catch (error) {
+      console.error("[SupabaseService] assignSecretSanta error", error);
       throw error;
     }
   }

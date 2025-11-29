@@ -48,7 +48,6 @@ export class RegisterComponent implements OnInit{
     // Simular proceso de registro
     const { error, data } = await this.supabaseService.signUp(this.email(), this.password(), this.fullName());
     if (error) {
-      console.log("Register => ", error)
       this.alertService.error("Registro fallido", `${this.fullName()} hemos tenido un problema al crear tu cuenta. Intentalo mas tarde. 
       \n Si el problema sigue contacta a soporte!`);
       this.isLoading.set(false);
@@ -66,7 +65,6 @@ export class RegisterComponent implements OnInit{
       'Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!'
     );
 
-    console.log("[registro] => ", data)
     this.setLocalStorage(data);
     setTimeout(() => {
       this.router.navigate(['/login']);
@@ -83,7 +81,6 @@ export class RegisterComponent implements OnInit{
       name: data.user.user_metadata['username'],
       avatarUrl: ""
     });
-
   }
 
   getInfoEvent() {

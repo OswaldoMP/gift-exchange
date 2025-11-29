@@ -1,0 +1,261 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 3rem);
+  background: radial-gradient(circle at top, #0c2133, #050a12);
+  color: #f3f7ff;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.glass {
+  background: rgba(5, 10, 18, 0.82);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+}
+
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.admin-header h1 {
+  margin: 0.4rem 0;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stats article {
+  flex: 1;
+  min-width: 120px;
+  padding: 1rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stats p {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stats strong {
+  margin-top: 0.5rem;
+  display: block;
+  font-size: 2rem;
+}
+
+button.primary {
+  background: linear-gradient(135deg, #f97b90, #f7c56a);
+  color: #050a12;
+  border: none;
+  border-radius: 18px;
+  font-weight: 700;
+  padding: 0.9rem 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(249, 123, 144, 0.35);
+}
+
+.admin-table {
+  padding: 1.5rem;
+}
+
+.admin-table .row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.6fr 1.2fr;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table .row.header {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-table .row:last-of-type {
+  border-bottom: none;
+}
+
+.cell .name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.cell .meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.badge {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(249, 123, 144, 0.4);
+  color: #f97b90;
+}
+
+.badge.ready {
+  border-color: rgba(120, 230, 178, 0.5);
+  color: #78e6b2;
+}
+
+.friend {
+  margin: 0;
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.accordion {
+  grid-template-columns: 1.2fr 0.6fr 1fr;
+  cursor: pointer;
+}
+
+.details {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.chevron {
+  font-size: 1rem;
+  display: inline-block;
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+  margin-left: 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.chevron.open {
+  transform: rotate(0deg);
+}
+
+.gifts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gifts li {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 0.5rem 0.75rem;
+}
+
+.gifts li span {
+  font-weight: 600;
+}
+
+.gifts li small {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loading {
+  margin: 3rem auto;
+  max-width: 360px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4000;
+}
+
+.confirm-card {
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.confirm-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+button.ghost,
+button.danger {
+  border-radius: 14px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+button.danger {
+  border-color: rgba(249, 123, 144, 0.6);
+  color: #f97b90;
+}
+
+@media (max-width: 900px) {
+  .admin-table .row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

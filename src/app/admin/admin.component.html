@@ -1,0 +1,86 @@
+<section class="admin-shell" *ngIf="!loading(); else loadingState">
+  <header class="admin-header glass">
+    <div>
+      <p class="eyebrow">Panel administrativo</p>
+      <h1>Control de participantes</h1>
+      <p>Monitorea el avance del equipo y dispara el sorteo cuando todos estén listos.</p>
+    </div>
+    <div class="stats">
+      <article>
+        <p>Participantes</p>
+        <strong>{{ participants().length }}</strong>
+      </article>
+      <article>
+        <p>Listos</p>
+        <strong>{{ readyCount() }}</strong>
+      </article>
+      <article>
+        <p>Asignados</p>
+        <strong>{{ assignedCount() }}</strong>
+      </article>
+    </div>
+    <div class="header-actions">
+      <button class="ghost" (click)="goToExchange()">Ir al intercambio</button>
+      <button class="primary" (click)="performDraw()" [disabled]="drawLoading()">
+        {{ drawLoading() ? 'Generando sorteo...' : 'Generar sorteo' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-table glass">
+    <div class="row header">
+      <span>Participante</span>
+      <span>Estado</span>
+      <span>Amigo secreto</span>
+    </div>
+
+    <div class="row accordion" *ngFor="let participant of participants()" (click)="toggleDetails(participant)">
+      <div class="cell">
+        <p class="name">{{ participant.name }}</p>
+        <p class="meta">ID: {{ participant.id }}</p>
+      </div>
+      <div class="cell">
+        <span class="badge" [class.ready]="participant.is_ready">
+          {{ participant.is_ready ? 'Listo' : 'Pendiente' }}
+        </span>
+      </div>
+      <div class="cell">
+        <div class="friend">
+          {{ getFriendName(participant) }}
+        </div>
+        <span class="chevron" [class.open]="isExpanded(participant)">⌃</span>
+      </div>
+      <div class="details" *ngIf="isExpanded(participant)">
+        <div class="gifts">
+          <p *ngIf="!participant.gifts.length" class="muted">Sin ideas registradas</p>
+          <ul *ngIf="participant.gifts.length">
+            <li *ngFor="let gift of participant.gifts">
+              <span>{{ gift.title }}</span>
+              <small>{{ gift.store || gift.link }}</small>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="confirm-overlay" *ngIf="showConfirm()">
+  <div class="confirm-card glass">
+    <h3>Ya existe un sorteo</h3>
+    <p>
+      Se detectó un sorteo previo. Si generas uno nuevo, las asignaciones actuales
+      de todos los participantes cambiarán. ¿Deseas continuar?
+    </p>
+    <div class="confirm-actions">
+      <button class="ghost" (click)="showConfirm.set(false)">Cancelar</button>
+      <button class="danger" (click)="performDraw()">Sí, reasignar</button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="loading glass">
+    <p>Cargando participantes...</p>
+  </div>
+</ng-template>

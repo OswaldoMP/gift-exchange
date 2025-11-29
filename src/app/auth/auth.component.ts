@@ -40,7 +40,6 @@ export class AuthComponent implements OnInit {
 
   validateRedirect() {
     const { info, token, email, succes, } = this.route.snapshot.queryParams;
-    console.log(token, email, succes, info);
 
     this.supabaseService.singInByToken(token).then((res) => {
       const status = res.data.user?.role;
@@ -72,8 +71,6 @@ export class AuthComponent implements OnInit {
     // Simular proceso de login
     const { error, data } = await this.supabaseService.signIn(this.email(), this.password());
     if (error) {
-      console.log(error.message)
-
       if (error.message === "Email not confirmed") {
         this.alertService.info("Correo no confirmado", `Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!`);
       } else if (error.message === 'Invalid login credentials') {
@@ -107,9 +104,13 @@ export class AuthComponent implements OnInit {
   }
 
   setLocalStore(data: any) {
-        localStorage.setItem("uuid", data.user.id);
-    localStorage.setItem("username", data.user.user_metadata['username']);
-
+    if (data?.user?.id) {
+      localStorage.setItem("uuid", data.user.id);
+    }
+    const username = data?.user?.user_metadata?.['username'] || data?.user?.email || '';
+    if (username) {
+      localStorage.setItem("username", username);
+    }
   }
 
   getInfoEvent() {

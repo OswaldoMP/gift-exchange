@@ -38,6 +38,7 @@
         </div>
 
         <div class="header-actions">
+            <button class="ghost" *ngIf="isAdminUser()" (click)="goToAdminDashboard()">Panel admin</button>
             <button class="ghost" (click)="signOut()">Cerrar sesión</button>
             <button class="primary" (click)="requestDraw()" [disabled]="isDrawn">
         {{ isDrawn ? 'Sorteo solicitado' : 'Solicitar sorteo' }}
@@ -53,7 +54,7 @@
         </article>
         <article>
             <p>Reglas del juego</p>
-            <h4>Presupuesto sugerido $40 USD</h4>
+            <h4>Presupuesto sugerido {{moneyEvent()}}</h4>
             <small>Incluye enlaces o tiendas para cada idea de regalo.</small>
         </article>
         <article>
@@ -70,7 +71,7 @@
                     <p class="eyebrow">Mis ideas</p>
                     <h2>Regalos guardados</h2>
                 </div>
-                <button *ngIf="canAddGift" class="primary subtle" (click)="openDialogNewGift()">Agregar idea</button>
+                <button *ngIf="canAddGift && !isDrawn" class="primary subtle" (click)="openDialogNewGift()">Agregar idea</button>
             </header>
 
             <div class="progress-bar">
@@ -135,7 +136,7 @@
                     <p class="subtitle">Mantén el misterio pero revisa su lista para planear la sorpresa perfecta.</p>
                 </header>
 
-                <div *ngIf="myAssignedFriend; else waiting" class="assigned-card glass">
+                <div *ngIf="myAssignedFriend && wheelAlreadyPlayed; else waiting" class="assigned-card glass">
                     <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" alt="Amigo secreto" />
                     <div>
                         <h3>{{ myAssignedFriend.name }}</h3>
@@ -143,7 +144,11 @@
                     </div>
                 </div>
 
-                <ul *ngIf="myAssignedFriend" class="gift-grid alt">
+                <button class="primary wheel-btn" *ngIf="myAssignedFriend && !wheelAlreadyPlayed" (click)="startWheelReveal()">
+                  Gira la ruleta y conoce a tu amigo secreto!
+                </button>
+
+                <ul *ngIf="myAssignedFriend && wheelAlreadyPlayed" class="gift-grid alt">
                     <li *ngFor="let g of myAssignedFriend.gifts" (click)="openGift(g)">
                         <div class="gift-chip">
                             <div>
@@ -173,6 +178,28 @@
             <p>Incluye enlaces o tiendas para cada idea de regalo.</p>
         </article>
     </section>
+
+    <div class="wheel-overlay" *ngIf="showWheelOverlay">
+        <div class="wheel-backdrop" (click)="closeWheelOverlay()"></div>
+        <div class="wheel-modal glass">
+            <button class="modal-close" (click)="closeWheelOverlay(true)">×</button>
+            <p class="eyebrow">Ruleta</p>
+            <h3>Así se decidió tu amigo secreto</h3>
+            <p class="subtitle">Observa el giro y celebra cuando se detenga en tu compañero asignado.</p>
+            <div class="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <div class="spin-wheel" [class.spinning]="wheelSpinning" [style.--spin-angle]="wheelRotation + 'deg'" [style.--spin-duration]="wheelDuration + 'ms'" [style.background]="wheelGradient" [style.transform]="'rotate(' + wheelStaticAngle + 'deg)'">
+                    <span class="wheel-label" *ngFor="let p of participants; let i = index" [style.transform]="wheelLabelTransform(i)">
+                        <span class="wheel-label__text">{{ p.name }}</span>
+                    </span>
+                </div>
+            </div>
+            <p class="hint center">La ruleta solo aparecerá una vez por participante.</p>
+        </div>
+        <div class="confetti" *ngIf="showConfetti">
+            <span *ngFor="let piece of confettiPieces" [style.animation-delay]="(piece * 70) + 'ms'" [style.left]="((piece * 37) % 100) + '%'"></span>
+        </div>
+    </div>
 
     <!-- MODAL EDITAR REGALO -->
     <div class="modal" *ngIf="selectedGift">
