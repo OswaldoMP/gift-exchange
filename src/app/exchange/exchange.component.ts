@@ -49,6 +49,8 @@ export class ExchangeComponent implements OnInit, OnDestroy {
   startEvent = signal<string>("");
   uploadGift = signal<string>("");
   isAdminUser = signal<boolean>(false);
+  showConfirm = signal<boolean>(false);
+  showTextDraw = signal<string>("");
 
   constructor(
     public participantService: ParticipantServiceService,
@@ -151,6 +153,17 @@ export class ExchangeComponent implements OnInit, OnDestroy {
 
   // Placeholder: función para disparar el sorteo (probablemente en el backend)
   async requestDraw() {
+    if (!this.showConfirm()) {
+      this.showConfirm.set(true);
+      let text = `Recuerda una vez confirmado el sorteo no hay marcha atras! \n¿Deseas continuar?`;
+      if (this.currentUser.gifts.length < 3) {
+          text = `Sin ideas? Recuerda una vez confirmado el sorteo no hay marcha atras! \nAun puedes agregar más regalos!`
+      }
+      this.showTextDraw.set(text);
+      return;
+    }
+    this.showConfirm.set(false);
+    this.showTextDraw.set("");
     // emit event o llamada a servicio; aquí solo un ejemplo de cómo se podría indicar
     await this.supabaseService.updatedParticipantToReady(localStorage.getItem("uuid") as string, true);
     this.drawResult = true;

@@ -319,4 +319,17 @@ export class SupabaseService {
       throw error;
     }
   }
+
+  async getAllGift() {
+    try {
+      const { data, error } = await this.supabase.from('gift').select("*");
+      if (error) {
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error("[SupabaseService] getGift error", error);
+      throw error;
+    }
+  }
 }

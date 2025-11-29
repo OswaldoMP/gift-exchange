@@ -9,7 +9,7 @@
     <header class="hub-header glass">
         <div class="identity">
             <div class="avatar-ring">
-                <img [src]="currentUser.avatarUrl || '../../assets/default-avatar.png'" alt="avatar" />
+                <img [src]="currentUser.avatarUrl || 'assets/default-avatar.png'" alt="avatar" />
                 <span class="status-dot" [class.ready]="isDrawn"></span>
             </div>
             <div>
@@ -277,3 +277,16 @@
         </div>
     </div>
 </section>
+
+<div class="confirm-overlay" *ngIf="showConfirm()">
+    <div class="confirm-card glass">
+        <h3>Confirma tu solicitud al sorteo!!!</h3>
+        <p>
+            {{showTextDraw()}}
+        </p>
+        <div class="confirm-actions">
+            <button class="ghost" (click)="showConfirm.set(false)">Cancelar</button>
+            <button class="danger" (click)="requestDraw()">Sí, solicitar sorteo</button>
+        </div>
+    </div>
+</div>

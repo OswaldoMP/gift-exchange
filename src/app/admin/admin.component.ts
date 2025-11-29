@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Participant } from '../models/participant-entity';
 import { SupabaseService } from '../services/supabase-service.service';
 import { AlertService } from '../services/alert-service.service';
+import { GiftEntity, Gift } from '../models/Gift';
 
 @Component({
   selector: 'app-admin',
@@ -24,6 +25,8 @@ export class AdminComponent implements OnInit {
   hasAssignments = signal<boolean>(false);
   showConfirm = signal<boolean>(false);
   isAdminSession = signal<boolean>(false);
+  gifts = signal<GiftEntity[]>([]);
+  removedGifts = signal<GiftEntity[]>([]);
 
   readyCount = computed(() => this.participants().filter(p => !!p.is_ready).length);
   assignedCount = computed(() => this.participants().filter(p => !!p.friend_id).length);
@@ -39,6 +42,7 @@ export class AdminComponent implements OnInit {
       }
     }
     await this.loadParticipants();
+    await this.loadGifts();
   }
 
   async loadParticipants() {
@@ -50,6 +54,17 @@ export class AdminComponent implements OnInit {
     } catch (error) {
       console.error(error);
       this.alertService.error('No pudimos cargar la información', 'Intenta nuevamente en unos segundos.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async loadGifts() {
+    try {
+      const data = await this.supabaseService.getAllGift();
+      this.gifts.set(data);
+    } catch (error) {
+      console.error(error);
     } finally {
       this.loading.set(false);
     }
@@ -130,6 +145,11 @@ export class AdminComponent implements OnInit {
     const current = this.expandedParticipantId();
     const participantId = participant.id || null;
     this.expandedParticipantId.set(current === participantId ? null : participantId);
+
+    const giftFilter = this.gifts()
+      .filter(v => v.participant_id === participantId)
+      .filter(v => v.removed === 1);
+    this.removedGifts.set(giftFilter);
   }
 
   isExpanded(participant: Participant): boolean {
