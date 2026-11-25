@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AlertService } from '../services/alert-service.service';
-import { SupabaseService } from '../services/supabase-service.service';
+import { LocalDbService } from '../services/local-db.service';
+import { Exchanges } from '../models/exchanges.entity';
 
 @Component({
   selector: 'app-auth',
@@ -14,7 +15,7 @@ import { SupabaseService } from '../services/supabase-service.service';
 })
 export class AuthComponent implements OnInit {
   private alertService = inject(AlertService);
-  private supabaseService = inject(SupabaseService);
+  private localDbService = inject(LocalDbService);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -24,37 +25,57 @@ export class AuthComponent implements OnInit {
   showPassword = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   rememberMe = signal<boolean>(false);
+  showResendConfirmation = signal<boolean>(false);
+  resendingEmail = signal<boolean>(false);
+  confirmationPreviewUrl = signal<string>('');
 
-  dateEvent = signal<string>("-");
-  timeEvent = signal<string>("-");
-  moneyEvent = signal<string>("-");
-  startEvent = signal<string>("-");
-  uploadGift = signal<string>("-");
-
-
+  eventConfig = signal<Required<Exchanges>>(this.localDbService.getCachedInfoEvent());
 
   ngOnInit(): void {
     this.validateRedirect();
-    this.supabaseService.getInfoEvent().then(() => this.getInfoEvent());
+    this.localDbService
+      .getInfoEvent()
+      .then((event) => this.eventConfig.set(event))
+      .catch(() => this.eventConfig.set(this.localDbService.getCachedInfoEvent()));
   }
 
-  validateRedirect() {
-    const { info, token, email, succes, } = this.route.snapshot.queryParams;
+  async validateRedirect(): Promise<void> {
+    const confirmToken = this.route.snapshot.queryParams['confirmToken'];
+    if (confirmToken) {
+      this.isLoading.set(true);
+      const res = await this.localDbService.confirmEmail(confirmToken);
+      this.isLoading.set(false);
+      if (res.error) {
+        this.alertService.error('Confirmación inválida', res.error.message, 5000);
+        return;
+      }
+      this.setLocalStore(res.data);
+      this.alertService.success(
+        '¡Cuenta confirmada!',
+        `Tu registro en ${this.eventConfig().event_title} fue confirmado correctamente.`,
+        4000
+      );
+      await this.router.navigate(['/intercambio']);
+      return;
+    }
 
-    this.supabaseService.singInByToken(token).then((res) => {
+    const token = this.route.snapshot.queryParams['token'];
+    if (!token) {
+      return;
+    }
+
+    this.localDbService.signInByToken(token).then((res) => {
       const status = res.data.user?.role;
       if (status === 'authenticated') {
         this.setLocalStore(res.data);
         this.router.navigate(['/intercambio']);
-      } else if (!this.route.snapshot.queryParams) {
+      } else {
         this.alertService.info(
-          `Cuenta no cofirmada`,
-          'Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!'
+          'Cuenta no confirmada',
+          'Valida tu cuenta para participar en nuestro intercambio navideño 2026.'
         );
-        return;
       }
     });
-
   }
 
   togglePasswordVisibility(): void {
@@ -68,13 +89,20 @@ export class AuthComponent implements OnInit {
     }
 
     this.isLoading.set(true);
-    // Simular proceso de login
-    const { error, data } = await this.supabaseService.signIn(this.email(), this.password());
+    this.showResendConfirmation.set(false);
+    this.confirmationPreviewUrl.set('');
+    const { error, data } = await this.localDbService.signIn(this.email(), this.password());
     if (error) {
-      if (error.message === "Email not confirmed") {
-        this.alertService.info("Correo no confirmado", `Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!`);
+      if (error.message === 'Email not confirmed') {
+        this.showResendConfirmation.set(true);
+        this.alertService.info(
+          'Correo no confirmado',
+          'Revisa tu bandeja de entrada para confirmar tu registro o solicita un nuevo enlace.'
+        );
       } else if (error.message === 'Invalid login credentials') {
-        this.alertService.error("Datos incorrectos", `Correo o password incorrectos`, 4000);
+        this.alertService.error('Datos incorrectos', 'Correo o contraseña incorrectos', 4000);
+      } else {
+        this.alertService.error('Error de conexión', 'No pudimos conectar con el servidor local del intercambio.', 4000);
       }
 
       this.isLoading.set(false);
@@ -85,41 +113,39 @@ export class AuthComponent implements OnInit {
     this.setLocalStore(data);
     this.alertService.success(
       '¡Bienvenido de vuelta!',
-      'Has iniciado sesión correctamente', 3800
+      `Has iniciado sesión en ${this.eventConfig().event_title}`,
+      3800
     );
     this.router.navigate(['/intercambio']);
   }
 
-  onMagicLinkLogin(): void {
-    if (!this.email()) {
-      alert('Por favor ingresa tu correo electrónico');
+  async onResendConfirmation(): Promise<void> {
+    if (!this.email() || this.resendingEmail()) {
       return;
     }
-    this.isLoading.set(true);
-    // Simular envío de magic link
-    setTimeout(() => {
-      this.isLoading.set(false);
-      alert(`¡Magic link enviado a ${this.email()}! Revisa tu correo.`);
-    }, 1500);
+    this.resendingEmail.set(true);
+    const res = await this.localDbService.resendConfirmation(this.email());
+    this.resendingEmail.set(false);
+    if (res.error) {
+      this.alertService.error('No se pudo reenviar', res.error.message);
+      return;
+    }
+    if (res.confirmationPreviewUrl) {
+      this.confirmationPreviewUrl.set(res.confirmationPreviewUrl);
+    }
+    this.alertService.success(
+      'Correo reenviado',
+      'Te enviamos un nuevo enlace de confirmación. Revisa tu correo.'
+    );
   }
 
-  setLocalStore(data: any) {
+  setLocalStore(data: any): void {
     if (data?.user?.id) {
-      localStorage.setItem("uuid", data.user.id);
+      localStorage.setItem('uuid', data.user.id);
     }
     const username = data?.user?.user_metadata?.['username'] || data?.user?.email || '';
     if (username) {
-      localStorage.setItem("username", username);
+      localStorage.setItem('username', username);
     }
-  }
-
-  getInfoEvent() {
-    const event = JSON.parse(localStorage.getItem("event") as string);
-
-    this.dateEvent.set(event.date_event);
-    this.timeEvent.set(event.time_event);
-    this.moneyEvent.set(event.money_event);
-    this.startEvent.set(event.start_event);
-    this.uploadGift.set(event.upload_gift);
   }
 }

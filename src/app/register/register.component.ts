@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AlertService } from '../services/alert-service.service';
-import { SupabaseService } from '../services/supabase-service.service';
+import { LocalDbService } from '../services/local-db.service';
+import { Exchanges } from '../models/exchanges.entity';
 
 @Component({
   selector: 'app-register',
@@ -12,26 +13,27 @@ import { SupabaseService } from '../services/supabase-service.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent implements OnInit{
+export class RegisterComponent implements OnInit {
   private alertService = inject(AlertService);
-  private supabaseService = inject(SupabaseService);
+  private localDbService = inject(LocalDbService);
   private router = inject(Router);
-
 
   fullName = signal<string>('');
   email = signal<string>('');
   password = signal<string>('');
   showPassword = signal<boolean>(false);
   isLoading = signal<boolean>(false);
+  pendingConfirmation = signal<boolean>(false);
+  resendingEmail = signal<boolean>(false);
+  confirmationPreviewUrl = signal<string>('');
 
-  dateEvent = signal<string>("");
-  timeEvent = signal<string>("");
-  moneyEvent = signal<string>("");
-  startEvent = signal<string>("");
-  uploadGift = signal<string>("");
+  eventConfig = signal<Required<Exchanges>>(this.localDbService.getCachedInfoEvent());
 
   ngOnInit(): void {
-    this.getInfoEvent(); 
+    this.localDbService
+      .getInfoEvent()
+      .then((event) => this.eventConfig.set(event))
+      .catch(() => this.eventConfig.set(this.localDbService.getCachedInfoEvent()));
   }
 
   togglePasswordVisibility(): void {
@@ -45,51 +47,71 @@ export class RegisterComponent implements OnInit{
     }
 
     this.isLoading.set(true);
-    // Simular proceso de registro
-    const { error, data } = await this.supabaseService.signUp(this.email(), this.password(), this.fullName());
+    const { error, data } = await this.localDbService.signUp(
+      this.email(),
+      this.password(),
+      this.fullName()
+    );
     if (error) {
-      this.alertService.error("Registro fallido", `${this.fullName()} hemos tenido un problema al crear tu cuenta. Intentalo mas tarde. 
-      \n Si el problema sigue contacta a soporte!`);
+      const detail =
+        error.message === 'User already registered'
+          ? `Ese correo ya está registrado en ${this.eventConfig().event_title}. Intenta iniciar sesión.`
+          : `${this.fullName()}, hemos tenido un problema al crear tu cuenta. Inténtalo más tarde.`;
+      this.alertService.error('Registro fallido', detail);
       this.isLoading.set(false);
       return;
     }
     this.isLoading.set(false);
 
-    this.alertService.success(
-      `¡Bienvenido ${this.fullName()}!`,
-      'Tu cuenta ha sido creada.'
-    );
-
-    this.alertService.info(
-      `${this.fullName()}!`,
-      'Revisa tu correo, para validar tu cuenta y participar en nuestro intercambios 2025!'
-    );
+    if (data.requiresConfirmation) {
+      this.pendingConfirmation.set(true);
+      if (data.confirmationPreviewUrl) {
+        this.confirmationPreviewUrl.set(data.confirmationPreviewUrl);
+      }
+      this.alertService.success(
+        `¡Cuenta creada, ${this.fullName()}!`,
+        'Enviamos un correo de confirmación. Abre el enlace para activar tu cuenta e ingresar a tu panel.',
+        5500
+      );
+      return;
+    }
 
     this.setLocalStorage(data);
-    setTimeout(() => {
-      this.router.navigate(['/login']);
-    }, 3800);
+    this.alertService.success(
+      `¡Bienvenido ${this.fullName()}!`,
+      `Tu cuenta de participante ha sido creada para ${this.eventConfig().event_title}.`,
+      3800
+    );
 
+    await this.router.navigate(['/intercambio']);
   }
 
-  async setLocalStorage(data: any) {
-    localStorage.setItem("uuid", data.user.id);
-    localStorage.setItem("username", data.user.user_metadata['username']);
-    this.supabaseService.saveParticipant({
-      oauth_id: data.user.id,
-      gifts: [],
-      name: data.user.user_metadata['username'],
-      avatarUrl: ""
-    });
+  async onResendConfirmation(): Promise<void> {
+    if (!this.email() || this.resendingEmail()) {
+      return;
+    }
+    this.resendingEmail.set(true);
+    const res = await this.localDbService.resendConfirmation(this.email());
+    this.resendingEmail.set(false);
+    if (res.error) {
+      this.alertService.error('Error al reenviar', res.error.message);
+      return;
+    }
+    if (res.confirmationPreviewUrl) {
+      this.confirmationPreviewUrl.set(res.confirmationPreviewUrl);
+    }
+    this.alertService.success(
+      'Correo reenviado',
+      'Revisa tu bandeja de entrada para confirmar tu registro.'
+    );
   }
 
-  getInfoEvent() {
-    const event = JSON.parse(localStorage.getItem("event") as string);
-
-    this.dateEvent.set(event.date_event);
-    this.timeEvent.set(event.time_event);
-    this.moneyEvent.set(event.money_event);
-    this.startEvent.set(event.start_event);
-    this.uploadGift.set(event.upload_gift);
+  setLocalStorage(data: any): void {
+    if (data?.user?.id) {
+      localStorage.setItem('uuid', data.user.id);
+    }
+    if (data?.user?.user_metadata?.['username']) {
+      localStorage.setItem('username', data.user.user_metadata['username']);
+    }
   }
 }

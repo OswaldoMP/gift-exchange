@@ -1,9 +1,9 @@
 <section class="admin-shell" *ngIf="!loading(); else loadingState">
     <header class="admin-header glass">
         <div>
-            <p class="eyebrow">Panel administrativo</p>
-            <h1>Control de participantes</h1>
-            <p>Monitorea el avance del equipo y dispara el sorteo cuando todos estén listos.</p>
+            <p class="eyebrow">Super Admin · {{ eventForm.event_title }}</p>
+            <h1>Centro de administración</h1>
+            <p>Gestiona participantes, roles de acceso, sorteo y todos los textos configurables del intercambio.</p>
         </div>
         <div class="stats">
             <article>
@@ -18,18 +18,53 @@
                 <p>Asignados</p>
                 <strong>{{ assignedCount() }}</strong>
             </article>
+            <article>
+                <p>Admins</p>
+                <strong>{{ adminCount() }}</strong>
+            </article>
         </div>
         <div class="header-actions">
             <button class="ghost" (click)="goToExchange()">Ir al intercambio</button>
+            <button
+                class="ghost manual-btn"
+                (click)="openManualModal()"
+                [disabled]="participants().length < 2">
+                Reasignar manual
+            </button>
+            <button
+                class="ghost"
+                *ngIf="hasAssignments() && eventForm.email_notifications_enabled"
+                (click)="notifyAssignedParticipants()"
+                [disabled]="notifyingEmail()">
+                {{ notifyingEmail() ? 'Enviando correos...' : 'Notificar por correo' }}
+            </button>
             <button class="primary" (click)="performDraw()" [disabled]="drawLoading()">
         {{ drawLoading() ? 'Generando sorteo...' : 'Generar sorteo' }}
       </button>
         </div>
     </header>
 
-    <div class="admin-table glass">
+    <nav class="admin-tabs glass" aria-label="Secciones de administración">
+        <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab() === 'participants'"
+            (click)="setTab('participants')">
+            Participantes y roles
+        </button>
+        <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab() === 'config'"
+            (click)="setTab('config')">
+            Configuración de textos y banners
+        </button>
+    </nav>
+
+    <div class="admin-table glass" *ngIf="activeTab() === 'participants'">
         <div class="row header">
             <span>Participante</span>
+            <span>Rol</span>
             <span>Estado</span>
             <span>Amigo secreto</span>
         </div>
@@ -37,50 +72,364 @@
         <div class="row accordion" *ngFor="let participant of participants()" (click)="toggleDetails(participant)">
             <div class="cell">
                 <p class="name">{{ participant.name }}</p>
-                <p class="meta">ID: {{ participant.id }}</p>
+                <p class="meta">{{ participant.email || ('ID: ' + participant.id) }}</p>
+            </div>
+            <div class="cell">
+                <span class="badge role" [class.admin]="isParticipantAdmin(participant)">
+                  {{ isParticipantAdmin(participant) ? 'Admin' : 'Participante' }}
+                </span>
             </div>
             <div class="cell">
                 <span class="badge" [class.ready]="participant.is_ready">
-          {{ participant.is_ready ? 'Listo' : 'Pendiente' }}
-        </span>
+                  {{ participant.is_ready ? 'Listo' : 'Pendiente' }}
+                </span>
             </div>
-            <div class="cell">
+            <div class="cell friend-cell">
                 <div class="friend">
                     {{ getFriendName(participant) }}
                 </div>
                 <span class="chevron" [class.open]="isExpanded(participant)">⌃</span>
             </div>
             <div class="details" *ngIf="isExpanded(participant)">
+                <div class="participant-profile">
+                    <h4>Detalles del participante</h4>
+                    <p><strong>ID:</strong> {{ participant.id }}</p>
+                    <p><strong>Correo:</strong> {{ participant.email || 'Sin correo registrado' }}</p>
+                    <p><strong>Rol actual:</strong> {{ isParticipantAdmin(participant) ? 'Admin (Super Admin)' : 'Participant' }}</p>
+                    <p>
+                        <strong>Ruleta:</strong>
+                        <span class="badge wheel-state" [class.ready]="participant.wheel_played">
+                            {{ participant.wheel_played ? 'Girada' : 'Pendiente' }}
+                        </span>
+                    </p>
+                    <div class="role-actions">
+                        <div class="action-row">
+                            <button
+                                type="button"
+                                class="ghost role-toggle"
+                                [disabled]="updatingRoleId() === participant.id || (isParticipantAdmin(participant) && isCurrentAdmin(participant))"
+                                (click)="toggleParticipantRole(participant, $event)">
+                                {{ isParticipantAdmin(participant) ? 'Cambiar a Participante' : 'Hacer Admin' }}
+                            </button>
+                            <button
+                                type="button"
+                                class="ghost wheel-toggle"
+                                [disabled]="updatingWheelId() === participant.id"
+                                (click)="toggleParticipantWheel(participant, $event)">
+                                {{ participant.wheel_played ? 'Reiniciar ruleta' : 'Marcar ruleta girada' }}
+                            </button>
+                            <button
+                                type="button"
+                                class="ghost reassign-inline"
+                                [disabled]="participants().length < 2"
+                                (click)="openManualModal(participant.id, $event)">
+                                Cambiar amigo secreto
+                            </button>
+                            <button
+                                type="button"
+                                class="ghost"
+                                *ngIf="participant.friend_id && eventForm.email_notifications_enabled"
+                                [disabled]="notifyingEmail()"
+                                (click)="notifyAssignedParticipants(participant, $event)">
+                                Notificar amigo secreto
+                            </button>
+                        </div>
+                        <small class="muted" *ngIf="isParticipantAdmin(participant) && isCurrentAdmin(participant)">
+                            Tu sesión actual de administrador no puede degradarse.
+                        </small>
+                    </div>
+                </div>
                 <div class="gifts">
+                    <h4>Ideas de regalo ({{ participant.gifts.length }})</h4>
                     <p *ngIf="!participant.gifts.length" class="muted">Sin ideas registradas</p>
                     <ul *ngIf="participant.gifts.length">
                         <li *ngFor="let gift of participant.gifts">
                             <span>{{ gift.title }}</span>
-                            <small>{{ gift.store || gift.link }}</small>
+                            <small>{{ gift.store || gift.link || 'Sin referencia' }}</small>
                         </li>
                     </ul>
-                    <p class="muted"> {{removedGifts().length ? 'Regalos eliminados:' : 'Regalos sin Eliminar'}}</p>
+                    <p class="muted">{{ removedGifts().length ? 'Regalos eliminados:' : 'Sin regalos eliminados' }}</p>
                     <ul *ngIf="removedGifts().length">
                         <li *ngFor="let gift of removedGifts()">
                             <span>{{ gift.title }}</span>
-                            <small>{{ gift.store || gift.link }}</small>
+                            <small>{{ gift.store || gift.link || 'Sin referencia' }}</small>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+
+    <form class="config-panel glass" *ngIf="activeTab() === 'config'" (ngSubmit)="saveEventConfig()">
+        <div class="config-header">
+            <div>
+                <p class="eyebrow">CMS del evento</p>
+                <h2>Textos, fechas, reglas y placeholders</h2>
+                <p class="muted">Modifica la información visible en inicio de sesión, registro, banners y modales sin tocar la base de datos.</p>
+            </div>
+            <div class="config-actions">
+                <button type="button" class="ghost" (click)="loadEventConfig()" [disabled]="savingConfig()">Restaurar</button>
+                <button type="submit" class="primary" [disabled]="savingConfig()">
+                    {{ savingConfig() ? 'Guardando...' : 'Guardar configuración' }}
+                </button>
+            </div>
+        </div>
+
+        <section class="config-group">
+            <h3>Feature flags</h3>
+            <label class="flag-card">
+                <div class="flag-copy">
+                    <strong>Envío de correos electrónicos</strong>
+                    <small class="muted">
+                        {{
+                            eventForm.email_notifications_enabled
+                                ? 'Activo: el registro solicita confirmación por correo y el sorteo notifica al amigo secreto por correo.'
+                                : 'Desactivado: el registro activa la cuenta al instante (acceso directo al panel) y no se envían correos al sortear.'
+                        }}
+                    </small>
+                </div>
+                <div class="flag-control">
+                    <input
+                        type="checkbox"
+                        name="email_notifications_enabled"
+                        [(ngModel)]="eventForm.email_notifications_enabled" />
+                    <span class="badge" [class.ready]="eventForm.email_notifications_enabled">
+                        {{ eventForm.email_notifications_enabled ? 'Activado' : 'Desactivado' }}
+                    </span>
+                </div>
+            </label>
+        </section>
+
+        <section class="config-group">
+            <h3>Fechas y presupuesto</h3>
+            <div class="config-grid">
+                <label class="field">
+                    <span>Título / etiqueta del evento</span>
+                    <input type="text" name="event_title" [(ngModel)]="eventForm.event_title" required />
+                </label>
+                <label class="field">
+                    <span>Presupuesto sugerido</span>
+                    <input type="text" name="money_event" [(ngModel)]="eventForm.money_event" required />
+                </label>
+                <label class="field">
+                    <span>Fecha de convocatoria / sorteo</span>
+                    <input type="text" name="start_event" [(ngModel)]="eventForm.start_event" required />
+                </label>
+                <label class="field">
+                    <span>Hora del sorteo</span>
+                    <input type="text" name="time_event" [(ngModel)]="eventForm.time_event" required />
+                </label>
+                <label class="field">
+                    <span>Fecha límite para carga de regalos</span>
+                    <input type="text" name="upload_gift" [(ngModel)]="eventForm.upload_gift" required />
+                </label>
+                <label class="field">
+                    <span>Fecha del intercambio</span>
+                    <input type="text" name="date_event" [(ngModel)]="eventForm.date_event" required />
+                </label>
+            </div>
+        </section>
+
+        <section class="config-group">
+            <h3>Banners informativos y reglas del juego</h3>
+            <div class="config-grid">
+                <label class="field">
+                    <span>Título del panel del participante</span>
+                    <input type="text" name="dashboard_title" [(ngModel)]="eventForm.dashboard_title" />
+                </label>
+                <label class="field">
+                    <span>Subtítulo del panel del participante</span>
+                    <input type="text" name="dashboard_subtitle" [(ngModel)]="eventForm.dashboard_subtitle" />
+                </label>
+                <label class="field">
+                    <span>Reglas del juego / intercambio</span>
+                    <textarea rows="2" name="rules_text" [(ngModel)]="eventForm.rules_text"></textarea>
+                </label>
+                <label class="field">
+                    <span>Recordatorio / checklist</span>
+                    <textarea rows="2" name="reminder_text" [(ngModel)]="eventForm.reminder_text"></textarea>
+                </label>
+                <label class="field">
+                    <span>Texto principal de bienvenida (Login)</span>
+                    <textarea rows="2" name="hero_subtitle" [(ngModel)]="eventForm.hero_subtitle"></textarea>
+                </label>
+                <label class="field">
+                    <span>Descripción del evento (Registro)</span>
+                    <textarea rows="2" name="register_subtitle" [(ngModel)]="eventForm.register_subtitle"></textarea>
+                </label>
+                <label class="field">
+                    <span>Nota del banner de sorteo</span>
+                    <input type="text" name="draw_banner_note" [(ngModel)]="eventForm.draw_banner_note" />
+                </label>
+                <label class="field">
+                    <span>Nota del banner del día del intercambio</span>
+                    <input type="text" name="exchange_banner_note" [(ngModel)]="eventForm.exchange_banner_note" />
+                </label>
+            </div>
+        </section>
+
+        <section class="config-group">
+            <h3>Placeholders de formularios y modales</h3>
+            <div class="config-grid">
+                <label class="field">
+                    <span>Placeholder de correo (Login / Registro)</span>
+                    <input type="text" name="email_placeholder" [(ngModel)]="eventForm.email_placeholder" />
+                </label>
+                <label class="field">
+                    <span>Placeholder nombre de regalo</span>
+                    <input type="text" name="gift_name_placeholder" [(ngModel)]="eventForm.gift_name_placeholder" />
+                </label>
+                <label class="field">
+                    <span>Placeholder tienda de regalo</span>
+                    <input type="text" name="gift_store_placeholder" [(ngModel)]="eventForm.gift_store_placeholder" />
+                </label>
+                <label class="field">
+                    <span>Placeholder enlace de regalo</span>
+                    <input type="text" name="gift_link_placeholder" [(ngModel)]="eventForm.gift_link_placeholder" />
+                </label>
+            </div>
+        </section>
+    </form>
 </section>
 
 <div class="confirm-overlay" *ngIf="showConfirm()">
     <div class="confirm-card glass">
         <h3>Ya existe un sorteo</h3>
         <p>
-            Se detectó un sorteo previo. Si generas uno nuevo, las asignaciones actuales de todos los participantes cambiarán. ¿Deseas continuar?
+            Se detectó un sorteo previo para {{ eventForm.event_title }}. Si generas uno nuevo, las asignaciones actuales de todos los participantes cambiarán. ¿Deseas continuar?
         </p>
         <div class="confirm-actions">
             <button class="ghost" (click)="showConfirm.set(false)">Cancelar</button>
             <button class="danger" (click)="performDraw()">Sí, reasignar</button>
+        </div>
+    </div>
+</div>
+
+<div class="confirm-overlay manual-overlay" *ngIf="showManualModal()">
+    <div class="manual-modal-card glass">
+        <div class="manual-modal-header">
+            <div>
+                <p class="eyebrow">Ajuste manual del sorteo</p>
+                <h3>Reasignar amigo secreto</h3>
+                <p class="muted">
+                    Selecciona uno o más pares (Participante → Amigo secreto). Al guardar, el sistema conservará las asignaciones previas que no entren en conflicto y reasignará únicamente a los participantes afectados.
+                </p>
+            </div>
+            <button type="button" class="modal-close" (click)="closeManualModal()" aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="multi-giver-picker">
+            <div class="field">
+                <span>Selección múltiple de participantes a reasignar</span>
+                <app-searchable-select
+                    [multiple]="true"
+                    [options]="giverSelectOptions()"
+                    [values]="selectedManualGiverIds()"
+                    (valuesChange)="onMultiGiversChange($event)"
+                    placeholder="Busca y selecciona uno o varios participantes…"
+                    searchPlaceholder="Buscar participante por nombre o correo…">
+                </app-searchable-select>
+            </div>
+        </div>
+
+        <div class="manual-pairs-list">
+            <div class="manual-pair-row" *ngFor="let pair of manualPairs(); let i = index">
+                <div class="field">
+                    <span>Participante #{{ i + 1 }}</span>
+                    <app-searchable-select
+                        [multiple]="false"
+                        [options]="giverSelectOptions()"
+                        [value]="pair.giverId"
+                        (valueChange)="updateManualPair(i, 'giverId', $event)"
+                        placeholder="Selecciona un participante…"
+                        searchPlaceholder="Buscar por nombre o correo…">
+                    </app-searchable-select>
+                </div>
+
+                <span class="pair-arrow" aria-hidden="true">→</span>
+
+                <div class="field">
+                    <span>Amigo secreto asignado</span>
+                    <app-searchable-select
+                        [multiple]="false"
+                        [options]="receiverSelectOptions()"
+                        [value]="pair.receiverId"
+                        (valueChange)="updateManualPair(i, 'receiverId', $event)"
+                        placeholder="Selecciona su amigo secreto…"
+                        searchPlaceholder="Buscar amigo secreto…">
+                    </app-searchable-select>
+                </div>
+
+                <button
+                    type="button"
+                    class="ghost remove-pair-btn"
+                    (click)="removeManualPairRow(i)"
+                    title="Quitar fila"
+                    aria-label="Quitar asignación">
+                    ×
+                </button>
+            </div>
+        </div>
+
+        <div class="manual-add-row">
+            <button
+                type="button"
+                class="ghost"
+                (click)="addManualPairRow()"
+                [disabled]="manualPairs().length >= participants().length">
+                + Agregar otra asignación
+            </button>
+        </div>
+
+        <div class="rule-banner error" *ngIf="!manualValidation().valid" role="alert">
+            <h4>⚠️ Regla de asignación incumplida</h4>
+            <ul>
+                <li *ngFor="let err of manualValidation().errors">{{ err }}</li>
+            </ul>
+            <div class="rule-suggestions" *ngIf="manualValidation().suggestions.length">
+                <p><strong>💡 Sugerencias:</strong></p>
+                <ul>
+                    <li *ngFor="let tip of manualValidation().suggestions">{{ tip }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <div
+            class="rule-banner warning"
+            *ngIf="manualValidation().valid && manualSubmitAttempted() && activeManualPairCount() === 0"
+            role="alert">
+            <h4>ℹ️ Falta seleccionar al menos un par</h4>
+            <p>Elige un participante y su amigo secreto para aplicar la reasignación manual.</p>
+        </div>
+
+        <div
+            class="rule-banner ok"
+            *ngIf="manualValidation().valid && activeManualPairCount() > 0">
+            <p>
+                ✅ <strong>{{ activeManualPairCount() }}</strong> asignación(es) manual(es) válida(s).
+                <span *ngIf="preservedManualCount() > 0">
+                    Se conservarán <strong>{{ preservedManualCount() }}</strong> asignación(es) previa(s) sin conflicto.
+                </span>
+                <span *ngIf="remainingAutoCount() > 0">
+                    Solo se reajustará automáticamente a <strong>{{ remainingAutoCount() }}</strong> participante(s) afectado(s).
+                </span>
+                <span *ngIf="remainingAutoCount() === 0 && preservedManualCount() === 0">
+                    Todos los participantes quedaron asignados manualmente.
+                </span>
+            </p>
+        </div>
+
+        <div class="manual-modal-actions">
+            <button type="button" class="ghost" (click)="closeManualModal()" [disabled]="manualSaving()">
+                Cancelar
+            </button>
+            <button
+                type="button"
+                class="primary"
+                (click)="applyManualAssignments()"
+                [disabled]="manualSaving() || !manualValidation().valid || activeManualPairCount() === 0">
+                {{ manualSaving() ? 'Aplicando reasignación...' : 'Aplicar y reasignar faltantes' }}
+            </button>
         </div>
     </div>
 </div>
