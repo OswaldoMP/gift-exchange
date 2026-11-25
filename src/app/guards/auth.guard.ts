@@ -1,12 +1,12 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase-service.service';
+import { LocalDbService } from '../services/local-db.service';
 
 export const authGuard: CanActivateFn = async () => {
   const router = inject(Router);
-  const supabase = inject(SupabaseService);
+  const localDb = inject(LocalDbService);
   try {
-    const { data } = await supabase.getSession();
+    const { data } = await localDb.getSession();
     const session = data.session;
     if (session?.user) {
       if (!localStorage.getItem('uuid')) {

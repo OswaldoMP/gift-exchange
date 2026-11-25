@@ -1,0 +1,241 @@
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.ss-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.ss-wrapper.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ss-trigger {
+  min-height: 44px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 24, 38, 0.94);
+  color: #f3f7ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ss-wrapper.open .ss-trigger,
+.ss-trigger:focus {
+  outline: none;
+  border-color: rgba(247, 197, 106, 0.75);
+  box-shadow: 0 0 0 2px rgba(247, 197, 106, 0.16);
+}
+
+.ss-value-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ss-placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.92rem;
+}
+
+.ss-single-label {
+  font-size: 0.94rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ss-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ss-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(247, 197, 106, 0.16);
+  border: 1px solid rgba(247, 197, 106, 0.45);
+  color: #ffe8a8;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.ss-chip-remove {
+  border: none;
+  background: transparent;
+  color: #ffe8a8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.ss-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.ss-clear {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+
+.ss-clear:hover {
+  color: #fff;
+}
+
+.ss-caret {
+  color: rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.ss-caret.rotated {
+  transform: rotate(180deg);
+}
+
+.ss-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 4200;
+  border-radius: 16px;
+  background: #0a1726;
+  border: 1px solid rgba(247, 197, 106, 0.35);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.ss-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-search-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(5, 10, 18, 0.85);
+  color: #f3f7ff;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.ss-search-input:focus {
+  outline: none;
+  border-color: rgba(247, 197, 106, 0.7);
+}
+
+.ss-count {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
+  min-width: 1.4rem;
+  text-align: right;
+}
+
+.ss-options {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ss-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ss-option:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ss-option.selected {
+  background: rgba(247, 197, 106, 0.14);
+}
+
+.ss-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ss-checkbox.checked {
+  background: #f7c56a;
+  border-color: #f7c56a;
+  color: #050a12;
+}
+
+.ss-option-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ss-option-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f3f7ff;
+}
+
+.ss-option-sublabel {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.ss-check-mark {
+  color: #78e6b2;
+  font-weight: 700;
+}
+
+.ss-empty {
+  padding: 0.9rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.88rem;
+}

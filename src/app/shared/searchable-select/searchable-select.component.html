@@ -1,0 +1,89 @@
+<div class="ss-wrapper" [class.open]="isOpen" [class.disabled]="disabled">
+    <div
+        class="ss-trigger"
+        role="combobox"
+        tabindex="0"
+        [attr.aria-expanded]="isOpen"
+        (click)="toggleOpen()"
+        (keydown.enter)="toggleOpen()"
+        (keydown.space)="$event.preventDefault(); toggleOpen()">
+
+        <div class="ss-value-area">
+            <ng-container *ngIf="multiple; else singleDisplay">
+                <span class="ss-placeholder" *ngIf="!selectedMultipleOptions.length">
+                    {{ placeholder }}
+                </span>
+                <div class="ss-chips" *ngIf="selectedMultipleOptions.length">
+                    <span class="ss-chip" *ngFor="let opt of selectedMultipleOptions">
+                        <span>{{ opt.label }}</span>
+                        <button
+                            type="button"
+                            class="ss-chip-remove"
+                            (click)="removeChip(opt.value, $event)"
+                            [attr.aria-label]="'Quitar ' + opt.label">
+                            ×
+                        </button>
+                    </span>
+                </div>
+            </ng-container>
+
+            <ng-template #singleDisplay>
+                <span *ngIf="selectedSingleOption" class="ss-single-label">
+                    {{ selectedSingleOption.label }}
+                </span>
+                <span *ngIf="!selectedSingleOption" class="ss-placeholder">
+                    {{ placeholder }}
+                </span>
+            </ng-template>
+        </div>
+
+        <div class="ss-controls">
+            <button
+                type="button"
+                class="ss-clear"
+                *ngIf="(multiple && values.length) || (!multiple && value)"
+                (click)="clearSelection($event)"
+                title="Limpiar selección"
+                aria-label="Limpiar selección">
+                ×
+            </button>
+            <span class="ss-caret" [class.rotated]="isOpen" aria-hidden="true">▾</span>
+        </div>
+    </div>
+
+    <div class="ss-dropdown" *ngIf="isOpen" role="listbox" [attr.aria-multiselectable]="multiple">
+        <div class="ss-search-box">
+            <input
+                #searchInput
+                type="search"
+                class="ss-search-input"
+                [(ngModel)]="searchQuery"
+                [placeholder]="searchPlaceholder"
+                (click)="$event.stopPropagation()" />
+            <small class="ss-count">{{ filteredOptions.length }}</small>
+        </div>
+
+        <ul class="ss-options">
+            <li
+                *ngFor="let opt of filteredOptions"
+                class="ss-option"
+                role="option"
+                [class.selected]="isSelected(opt.value)"
+                [attr.aria-selected]="isSelected(opt.value)"
+                (click)="selectOption(opt)">
+                <span class="ss-checkbox" *ngIf="multiple" [class.checked]="isSelected(opt.value)">
+                    {{ isSelected(opt.value) ? '✓' : '' }}
+                </span>
+                <div class="ss-option-text">
+                    <span class="ss-option-label">{{ opt.label }}</span>
+                    <small class="ss-option-sublabel" *ngIf="opt.sublabel">{{ opt.sublabel }}</small>
+                </div>
+                <span class="ss-check-mark" *ngIf="!multiple && isSelected(opt.value)">✓</span>
+            </li>
+
+            <li class="ss-empty" *ngIf="!filteredOptions.length">
+                {{ emptyText }}
+            </li>
+        </ul>
+    </div>
+</div>

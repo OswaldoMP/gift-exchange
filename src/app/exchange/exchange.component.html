@@ -14,8 +14,8 @@
             </div>
             <div>
                 <p class="eyebrow">Hola {{ currentUser.name || 'participante' }}</p>
-                <h1>Panel del intercambio navideño</h1>
-                <p>Revisa tus ideas de regalo, solicita el sorteo y mantente al tanto del estado del evento.</p>
+                <h1>{{ eventConfig().dashboard_title }}</h1>
+                <p>{{ eventConfig().dashboard_subtitle }}</p>
             </div>
         </div>
 
@@ -48,26 +48,26 @@
 
     <section class="info-banner">
         <article>
-            <p>Próxima actualización</p>
-            <h4>{{startEvent()}} · {{timeEvent()}}</h4>
-            <small>Para recibir el resultado del sorteo.</small>
+            <p>Próximo sorteo</p>
+            <h4>{{ eventConfig().start_event }} · {{ eventConfig().time_event }}</h4>
+            <small>{{ eventConfig().draw_banner_note }}</small>
         </article>
         <article>
             <p>Reglas del juego</p>
-            <h4>Presupuesto sugerido {{moneyEvent()}}</h4>
-            <small>Incluye enlaces o tiendas para cada idea de regalo.</small>
+            <h4>Presupuesto sugerido {{ eventConfig().money_event }}</h4>
+            <small>{{ eventConfig().rules_text }}</small>
         </article>
         <article>
             <p>Checklist</p>
             <h4>{{ canAddGift ? 'Agrega más ideas' : 'Lista completa' }}</h4>
-            <small>Comparte mínimo tres opciones para inspirar a tu amigo secreto.</small>
+            <small>{{ eventConfig().reminder_text }}</small>
             <h4>Carga de regalos</h4>
-            <p>{{uploadGift()}}</p>
+            <p>{{ eventConfig().upload_gift }}</p>
             <small>Recuerda subir tus regalos a tiempo</small> </article>
         <article>
-            <p>Intercambio</p>
-            <h4>{{dateEvent()}}</h4>
-            <small>Para dar y recibir regalo de tu amigo secreto</small>
+            <p>{{ eventConfig().event_title }}</p>
+            <h4>{{ eventConfig().date_event }}</h4>
+            <small>{{ eventConfig().exchange_banner_note }}</small>
         </article>
     </section>
 
@@ -143,29 +143,35 @@
                     <p class="subtitle">Mantén el misterio pero revisa su lista para planear la sorpresa perfecta.</p>
                 </header>
 
-                <div *ngIf="myAssignedFriend && wheelAlreadyPlayed; else waiting" class="assigned-card glass">
-                    <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" alt="Amigo secreto" />
-                    <div>
-                        <h3>{{ myAssignedFriend.name }}</h3>
-                        <p>{{ myAssignedFriend.gifts.length }} ideas guardadas</p>
-                    </div>
-                </div>
-
-                <button class="primary wheel-btn" *ngIf="myAssignedFriend && !wheelAlreadyPlayed" (click)="startWheelReveal()">
-                  Gira la ruleta y conoce a tu amigo secreto!
-                </button>
-
-                <ul *ngIf="myAssignedFriend && wheelAlreadyPlayed" class="gift-grid alt">
-                    <li *ngFor="let g of myAssignedFriend.gifts" (click)="openGift(g)">
-                        <div class="gift-chip">
+                <ng-container *ngIf="myAssignedFriend; else waiting">
+                    <ng-container *ngIf="wheelAlreadyPlayed; else revealWheel">
+                        <div class="assigned-card glass">
+                            <img [src]="myAssignedFriend.avatarUrl || 'assets/default-avatar.png'" alt="Amigo secreto" />
                             <div>
-                                <p>{{ g.title }}</p>
-                                <small>{{ g.store || g.link || 'Sin referencia' }}</small>
+                                <h3>{{ myAssignedFriend.name }}</h3>
+                                <p>{{ myAssignedFriend.gifts.length }} ideas guardadas</p>
                             </div>
-                            <span>✨</span>
                         </div>
-                    </li>
-                </ul>
+
+                        <ul class="gift-grid alt">
+                            <li *ngFor="let g of myAssignedFriend.gifts" (click)="openGift(g)">
+                                <div class="gift-chip">
+                                    <div>
+                                        <p>{{ g.title }}</p>
+                                        <small>{{ g.store || g.link || 'Sin referencia' }}</small>
+                                    </div>
+                                    <span>✨</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </ng-container>
+
+                    <ng-template #revealWheel>
+                        <button class="primary wheel-btn" (click)="startWheelReveal()">
+                          Gira la ruleta y conoce a tu amigo secreto!
+                        </button>
+                    </ng-template>
+                </ng-container>
 
                 <ng-template #waiting>
                     <div class="empty-state">
@@ -180,31 +186,112 @@
     <section class="secondary-grid">
         <article class="card highlight">
             <h3>Recordatorio</h3>
-            <p>Comparte mínimo tres opciones para inspirar a tu amigo secreto.</p>
+            <p>{{ eventConfig().reminder_text }}</p>
 
-            <p>Incluye enlaces o tiendas para cada idea de regalo.</p>
+            <p>{{ eventConfig().rules_text }}</p>
         </article>
     </section>
 
     <div class="wheel-overlay" *ngIf="showWheelOverlay">
         <div class="wheel-backdrop" (click)="closeWheelOverlay()"></div>
-        <div class="wheel-modal glass">
+        <div class="wheel-modal glass holiday-wheel-modal">
             <button class="modal-close" (click)="closeWheelOverlay(true)">×</button>
-            <p class="eyebrow">Ruleta</p>
-            <h3>Así se decidió tu amigo secreto</h3>
-            <p class="subtitle">Observa el giro y celebra cuando se detenga en tu compañero asignado.</p>
-            <div class="wheel-wrapper">
-                <div class="wheel-pointer"></div>
-                <div class="spin-wheel" [class.spinning]="wheelSpinning" [style.--spin-angle]="wheelRotation + 'deg'" [style.--spin-duration]="wheelDuration + 'ms'" [style.background]="wheelGradient" [style.transform]="'rotate(' + wheelStaticAngle + 'deg)'">
-                    <span class="wheel-label" *ngFor="let p of participants; let i = index" [style.transform]="wheelLabelTransform(i)">
-                        <span class="wheel-label__text">{{ p.name }}</span>
-                    </span>
+            <div class="wheel-modal-header">
+                <span class="wheel-badge">🎄 {{ eventConfig().event_title }}</span>
+                <h3>Ruleta Navideña</h3>
+                <p class="subtitle">
+                    {{ wheelRevealFinished ? '¡Magia navideña completada! Ya conoces a tu amigo secreto.' : 'Observa el giro y descubre a quién le darás regalo esta Navidad.' }}
+                </p>
+            </div>
+
+            <div class="wheel-stage">
+                <div class="wheel-pointer-festive" [class.ticking]="wheelSpinning" aria-hidden="true">
+                    <svg viewBox="0 0 46 56" width="46" height="56">
+                        <defs>
+                            <linearGradient id="pointerGold" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#fff1b8" />
+                                <stop offset="50%" stop-color="#f5c249" />
+                                <stop offset="100%" stop-color="#b87b16" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M23 54 L6 18 A17 17 0 1 1 40 18 Z" fill="url(#pointerGold)" stroke="#4a1118" stroke-width="2.5" />
+                        <circle cx="23" cy="18" r="7" fill="#c41e3a" stroke="#fff3c4" stroke-width="2" />
+                    </svg>
+                </div>
+
+                <div class="wheel-frame">
+                    <svg class="wheel-bezel-svg" viewBox="0 0 440 440" aria-hidden="true">
+                        <defs>
+                            <radialGradient id="bezelRim" cx="50%" cy="50%" r="50%">
+                                <stop offset="82%" stop-color="#4e0c18" />
+                                <stop offset="92%" stop-color="#d49b27" />
+                                <stop offset="100%" stop-color="#6b1020" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="220" cy="220" r="218" fill="url(#bezelRim)" stroke="#f8d87c" stroke-width="3" />
+                        <circle cx="220" cy="220" r="196" fill="#08131d" stroke="#f8d87c" stroke-width="2" />
+                        <g class="wheel-bulbs">
+                            <circle
+                                *ngFor="let bulb of wheelBulbs"
+                                class="wheel-bulb"
+                                [attr.cx]="bulb.cx"
+                                [attr.cy]="bulb.cy"
+                                r="5.5"
+                                [attr.fill]="bulb.color"
+                                [style.animation-delay]="bulb.delay"
+                            />
+                        </g>
+                    </svg>
+
+                    <div
+                        class="spin-wheel-disc"
+                        [class.spinning]="wheelSpinning"
+                        [style.--spin-angle]="wheelRotation + 'deg'"
+                        [style.--spin-duration]="wheelDuration + 'ms'"
+                        [style.transform]="'rotate(' + wheelStaticAngle + 'deg)'">
+                        <svg class="wheel-svg" viewBox="0 0 400 400" role="img" aria-label="Ruleta de participantes">
+                            <g *ngFor="let slice of wheelSlices">
+                                <path
+                                    [attr.d]="slice.path"
+                                    [attr.fill]="slice.color"
+                                    stroke="#f8d87c"
+                                    stroke-width="1.2"
+                                />
+                                <text
+                                    x="376"
+                                    y="200"
+                                    fill="#fffaf0"
+                                    text-anchor="end"
+                                    dominant-baseline="central"
+                                    class="wheel-slice-label"
+                                    [attr.font-size]="slice.fontSize"
+                                    [attr.transform]="slice.textTransform">
+                                    {{ slice.label }}
+                                </text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="wheel-center-hub" aria-hidden="true">
+                        <span>🎄</span>
+                    </div>
                 </div>
             </div>
-            <p class="hint center">La ruleta solo aparecerá una vez por participante.</p>
+
+            <div class="wheel-winner-banner" *ngIf="wheelRevealFinished && myAssignedFriend">
+                <p class="winner-eyebrow">🎉 ¡Tu amigo secreto es!</p>
+                <h4>{{ myAssignedFriend.name }}</h4>
+                <button type="button" class="primary winner-cta" (click)="closeWheelOverlay(true)">
+                    Ver su lista de regalos 🎁
+                </button>
+            </div>
+
+            <p class="hint center" *ngIf="!wheelRevealFinished">
+                La ruleta se registra automáticamente en tu cuenta ({{ participants.length }} participantes en juego).
+            </p>
         </div>
         <div class="confetti" *ngIf="showConfetti">
-            <span *ngFor="let piece of confettiPieces" [style.animation-delay]="(piece * 70) + 'ms'" [style.left]="((piece * 37) % 100) + '%'"></span>
+            <span *ngFor="let piece of confettiPieces" [style.animation-delay]="(piece * 65) + 'ms'" [style.left]="((piece * 29) % 100) + '%'"></span>
         </div>
     </div>
 
@@ -215,23 +302,23 @@
             <button class="modal-close" (click)="closeGift()">×</button>
 
             <header>
-                <p class="eyebrow">Editar regalo</p>
+                <p class="eyebrow">Editar regalo · 2026</p>
                 <h3>Actualiza la información</h3>
             </header>
 
             <label class="field">
         <span>Nombre</span>
-        <input type="text" [(ngModel)]="selectedGift.title" />
+        <input type="text" [(ngModel)]="selectedGift.title" [placeholder]="eventConfig().gift_name_placeholder" />
       </label>
 
             <label class="field">
         <span>Tienda</span>
-        <input type="text" [(ngModel)]="selectedGift.store" />
+        <input type="text" [(ngModel)]="selectedGift.store" [placeholder]="eventConfig().gift_store_placeholder" />
       </label>
 
             <label class="field">
         <span>Link</span>
-        <input type="text" [(ngModel)]="selectedGift.link" />
+        <input type="text" [(ngModel)]="selectedGift.link" [placeholder]="eventConfig().gift_link_placeholder" />
       </label>
 
             <div class="modal-actions">
@@ -251,23 +338,23 @@
             <button class="modal-close" (click)="closeGift()">×</button>
 
             <header>
-                <p class="eyebrow">Nueva idea</p>
+                <p class="eyebrow">Nueva idea · {{ eventConfig().event_title }}</p>
                 <h3>Describe el regalo</h3>
             </header>
 
             <label class="field">
         <span>Nombre</span>
-        <input type="text" [(ngModel)]="newGift.title" />
+        <input type="text" [(ngModel)]="newGift.title" [placeholder]="eventConfig().gift_name_placeholder" />
       </label>
 
             <label class="field">
         <span>Tienda</span>
-        <input type="text" [(ngModel)]="newGift.store" />
+        <input type="text" [(ngModel)]="newGift.store" [placeholder]="eventConfig().gift_store_placeholder" />
       </label>
 
             <label class="field">
         <span>Link</span>
-        <input type="text" [(ngModel)]="newGift.link" />
+        <input type="text" [(ngModel)]="newGift.link" [placeholder]="eventConfig().gift_link_placeholder" />
       </label>
 
             <div class="modal-actions">
@@ -280,7 +367,7 @@
 
 <div class="confirm-overlay" *ngIf="showConfirm()">
     <div class="confirm-card glass">
-        <h3>Confirma tu solicitud al sorteo!!!</h3>
+        <h3>Confirma tu solicitud al sorteo 2026</h3>
         <p>
             {{showTextDraw()}}
         </p>

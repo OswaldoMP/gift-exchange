@@ -9,53 +9,53 @@
             <div class="seal">
                 <span>🎄</span>
                 <div>
-                    <p>Club Navideño</p>
+                    <p>{{ eventConfig().event_title }}</p>
                     <strong>Secret Santa Hub</strong>
                 </div>
             </div>
             <h1>
-                Crea tu cuenta y desbloquea un tablero completo para coordinar el intercambio navideño.
+                Crea tu cuenta y desbloquea un tablero completo para coordinar {{ eventConfig().event_title }}.
             </h1>
             <p>
-                Diseñamos una experiencia moderna para sumar participantes, registrar ideas de regalos y compartir actualizaciones con banners informativos en cada etapa del evento.
+                {{ eventConfig().register_subtitle }}
             </p>
 
             <div class="timeline">
                 <div>
                     <p class="label">Convocatoria</p>
-                    <p class="value">{{startEvent()}}</p>
+                    <p class="value">{{ eventConfig().start_event }}</p>
                 </div>
                 <div>
                     <p class="label">Carga de regalos</p>
-                    <p class="value">{{uploadGift()}}</p>
+                    <p class="value">{{ eventConfig().upload_gift }}</p>
                 </div>
                 <div>
                     <p class="label">Intercambio</p>
-                    <p class="value highlight"> {{dateEvent()}} </p>
+                    <p class="value highlight"> {{ eventConfig().date_event }} </p>
                 </div>
             </div>
 
             <div class="steps">
                 <div class="step">
                     <span>1</span>
-                    <p>Completa tu perfil con nombre y avatar.</p>
+                    <p>Completa tu perfil con nombre y correo.</p>
                 </div>
                 <div class="step">
                     <span>2</span>
-                    <p>Invita a tu equipo con un enlace privado.</p>
+                    <p>{{ eventConfig().rules_text }}</p>
                 </div>
                 <div class="step">
                     <span>3</span>
-                    <p>Agrega hasta cinco ideas de regalo y listo.</p>
+                    <p>{{ eventConfig().reminder_text }}</p>
                 </div>
             </div>
         </section>
 
         <section class="register-card">
             <header>
-                <p class="eyebrow">Nuevo acceso</p>
+                <p class="eyebrow">Nuevo acceso · Participante</p>
                 <h2>Crea tu cuenta</h2>
-                <p>Solo tomará un minuto y podrás volver al panel en cualquier dispositivo.</p>
+                <p>Solo tomará un minuto y entrarás directo al panel de {{ eventConfig().event_title }}.</p>
             </header>
 
             <form (ngSubmit)="onRegister()" class="form-grid">
@@ -72,13 +72,13 @@
         </label>
 
                 <label class="field">
-          <span>Correo corporativo</span>
+          <span>Correo electrónico</span>
           <input
             id="email"
             name="email"
             type="email"
             [(ngModel)]="email"
-            placeholder="sofia@tuempresa.com"
+            [placeholder]="eventConfig().email_placeholder"
             required
           />
         </label>
@@ -106,15 +106,32 @@
         </button>
             </form>
 
+            <div *ngIf="pendingConfirmation()" style="margin-top:1rem;padding:1rem;border-radius:16px;background:rgba(120,230,178,0.12);border:1px solid rgba(120,230,178,0.45);font-size:0.9rem;">
+                <p style="margin:0 0 0.5rem;font-weight:600;">📧 Revisa tu correo electrónico</p>
+                <p style="margin:0 0 0.75rem;">
+                    Enviamos un enlace de confirmación a <strong>{{ email() }}</strong>. Al abrirlo entrarás directo a tu panel del intercambio.
+                </p>
+                <button type="button" (click)="onResendConfirmation()" [disabled]="resendingEmail()" style="border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;padding:0.45rem 0.9rem;border-radius:10px;cursor:pointer;">
+                    {{ resendingEmail() ? 'Reenviando...' : 'Reenviar correo' }}
+                </button>
+                <p *ngIf="confirmationPreviewUrl()" style="margin:0.75rem 0 0;">
+                    <a [href]="confirmationPreviewUrl()" style="color:#ffe299;font-weight:600;">Confirmar cuenta ahora (modo local sin SMTP) →</a>
+                </p>
+            </div>
+
             <div class="extras">
                 <div>
-                    <p>¿Ya participas?</p>
+                    <p>¿Ya participas en 2026?</p>
                     <a routerLink="/login">Inicia sesión aquí</a>
                 </div>
                 <div class="security">
                     <span>🔐</span>
                     <p>
-                        Tus datos están protegidos. Recibirás un correo para confirmar tu acceso al intercambio.
+                        {{
+                            eventConfig().email_notifications_enabled
+                                ? 'Tus datos sensibles se almacenan cifrados (AES-256-GCM). Recibirás un correo para confirmar tu acceso al intercambio.'
+                                : 'Tus datos sensibles se almacenan cifrados (AES-256-GCM). Tu cuenta quedará activa al instante para entrar al intercambio.'
+                        }}
                     </p>
                 </div>
             </div>

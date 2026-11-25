@@ -1,16 +1,16 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase-service.service';
+import { LocalDbService } from '../services/local-db.service';
 
 export const adminGuard: CanActivateFn = async () => {
   const router = inject(Router);
-  const supabase = inject(SupabaseService);
+  const localDb = inject(LocalDbService);
   const uuid = localStorage.getItem('uuid');
   if (!uuid) {
     return router.createUrlTree(['/login']);
   }
   try {
-    const participant = await supabase.getParticipant(uuid);
+    const participant = await localDb.getParticipant(uuid);
     if (participant.is_admin) {
       return true;
     }

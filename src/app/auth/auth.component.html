@@ -13,28 +13,28 @@
 
     <div class="auth-shell">
         <section class="hero-panel">
-            <div class="brand-chip">Intercambio 2025</div>
+            <div class="brand-chip">{{ eventConfig().event_title }}</div>
             <h1>
                 Vive el
                 <span>espíritu navideño</span> con tu equipo
             </h1>
             <p>
-                Coordina el sorteo, comparte ideas de regalos y mantén a tu tribu conectada desde un único espacio.
+                {{ eventConfig().hero_subtitle }}
             </p>
 
             <div class="hero-banner">
                 <div>
                     <p class="banner-label">Próximo sorteo</p>
-                    <p class="banner-value">{{startEvent()}} · {{timeEvent()}}</p>
+                    <p class="banner-value">{{ eventConfig().start_event }} · {{ eventConfig().time_event }}</p>
                 </div>
                 <div>
                     <p class="banner-label">Presupuesto sugerido</p>
-                    <p class="banner-value">{{moneyEvent()}}</p>
+                    <p class="banner-value">{{ eventConfig().money_event }}</p>
                 </div>
             </div>
 
             <ul class="hero-list">
-                <li>🎁 Guarda hasta cinco ideas de regalos por participante.</li>
+                <li>🎁 {{ eventConfig().reminder_text }}</li>
             </ul>
 
         </section>
@@ -45,27 +45,27 @@
                     <p class="eyebrow">Centro de control</p>
                     <h2>Inicia sesión</h2>
                     <p class="subtitle">
-                        Ingresa tus credenciales para continuar organizando el intercambio.
+                        Ingresa tus credenciales para continuar organizando {{ eventConfig().event_title }}.
                     </p>
                 </div>
-                <div class="badge warm">🎅 Seguridad reforzada</div>
+                <div class="badge warm">🎅 {{ eventConfig().event_title }}</div>
             </div>
 
             <form (ngSubmit)="onLogin()" class="form-grid">
                 <label class="field">
-          <span>E-mail</span>
+          <span>Correo electrónico</span>
           <input
             type="email"
             id="email"
             name="email"
             [(ngModel)]="email"
-            placeholder="navidad@tuempresa.com"
+            [placeholder]="eventConfig().email_placeholder"
             required
           />
         </label>
 
                 <label class="field">
-          <span>Password</span>
+          <span>Contraseña</span>
           <div class="password-field">
             <input
               [type]="showPassword() ? 'text' : 'password'"
@@ -83,14 +83,24 @@
 
 
                 <button type="submit" class="cta" [disabled]="isLoading()">
-          <span *ngIf="!isLoading()">Entrar al intercambio</span>
+          <span *ngIf="!isLoading()">Entrar al intercambio 2026</span>
           <span *ngIf="isLoading()" class="loading">Conectando...</span>
         </button>
             </form>
 
+            <div class="resend-banner" *ngIf="showResendConfirmation()" style="margin-top:1rem;padding:0.9rem 1rem;border-radius:14px;background:rgba(247,197,106,0.12);border:1px solid rgba(247,197,106,0.45);font-size:0.88rem;">
+                <p style="margin:0 0 0.6rem;">Tu cuenta aún no está confirmada. Revisa tu correo o solicita un nuevo enlace.</p>
+                <button type="button" class="ghost" (click)="onResendConfirmation()" [disabled]="resendingEmail()">
+                    {{ resendingEmail() ? 'Reenviando...' : 'Reenviar correo de confirmación' }}
+                </button>
+                <p *ngIf="confirmationPreviewUrl()" style="margin:0.65rem 0 0;">
+                    <a [href]="confirmationPreviewUrl()" style="color:#ffe299;font-weight:600;">Confirmar cuenta ahora (vista local sin SMTP)</a>
+                </p>
+            </div>
+
             <footer class="panel-footer">
                 <p>¿Aún no tienes acceso?</p>
-                <a routerLink="/register">Crea una cuenta y comparte la lista con tu equipo.</a>
+                <a routerLink="/register">Crea una cuenta y comparte tu lista de Navidad 2026.</a>
             </footer>
         </section>
     </div>

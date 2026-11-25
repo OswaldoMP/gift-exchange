@@ -4,14 +4,42 @@ import { Participant } from '../models/participant-entity';
 import { Gift } from '../models/Gift';
 import { ParticipantServiceService } from '../services/participant-service.service';
 import { FormsModule } from '@angular/forms';
-import { SupabaseService } from '../services/supabase-service.service';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { LocalDbService } from '../services/local-db.service';
+import { Exchanges, mergeExchangeConfig } from '../models/exchanges.entity';
+import { ActivatedRoute, Router } from '@angular/router';
+
+export interface WheelSlice {
+  id: string;
+  label: string;
+  fullName: string;
+  path: string;
+  color: string;
+  textTransform: string;
+  fontSize: number;
+}
+
+export interface WheelBulb {
+  cx: number;
+  cy: number;
+  color: string;
+  delay: string;
+}
+
+const CHRISTMAS_SLICE_PALETTE = [
+  '#c41e3a', // Cranberry Red
+  '#146b3a', // Pine Emerald
+  '#c9932c', // Festive Gold
+  '#8f1d2c', // Holly Crimson
+  '#0f4c3a', // Deep Evergreen
+  '#a66d1f', // Warm Amber
+];
+
+const BULB_PALETTE = ['#ffe082', '#ff5a72', '#52e5a5', '#fff8e1'];
 
 @Component({
   selector: 'app-exchange',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  // templateUrl: './exchange.component.html',
   templateUrl: './exchange.component.html',
   styleUrl: './exchange.component.css'
 })
@@ -19,66 +47,73 @@ export class ExchangeComponent implements OnInit, OnDestroy {
 
   private router = inject(Router);
 
-  currentUser!: Participant;
+  currentUser: Participant = {
+    name: '',
+    gifts: [],
+    avatarUrl: ''
+  };
   participants: Participant[] = [];
   drawResult: any = false;
-
 
   expandedUserId: string | null = null;
   selectedGift: Gift | null = null;
   newGift: Gift | null = null;
-  userEmail: string = "";
+  userEmail: string = '';
   assignedFriend: any;
   wheelAlreadyPlayed = false;
   showWheelOverlay = false;
   wheelSpinning = false;
+  wheelRevealFinished = false;
   wheelRotation = 0;
-  wheelDuration = 5200;
+  wheelDuration = 5400;
   showConfetti = false;
-  confettiPieces = Array.from({ length: 28 }).map((_, index) => index);
+  confettiPieces = Array.from({ length: 42 }).map((_, index) => index);
   wheelStaticAngle = 0;
+  readonly wheelBulbs: WheelBulb[] = this.buildWheelBulbs();
   private audioCtx?: AudioContext;
   private spinOscillator?: OscillatorNode;
   private spinGain?: GainNode;
   private wheelTimeout?: ReturnType<typeof setTimeout>;
   private confettiTimeout?: ReturnType<typeof setTimeout>;
 
-  dateEvent = signal<string>("");
-  timeEvent = signal<string>("");
-  moneyEvent = signal<string>("");
-  startEvent = signal<string>("");
-  uploadGift = signal<string>("");
+  eventConfig = signal<Required<Exchanges>>(mergeExchangeConfig());
   isAdminUser = signal<boolean>(false);
   showConfirm = signal<boolean>(false);
-  showTextDraw = signal<string>("");
+  showTextDraw = signal<string>('');
 
   constructor(
     public participantService: ParticipantServiceService,
-    public supabaseService: SupabaseService,
+    public localDbService: LocalDbService,
     public route: ActivatedRoute
   ) {
-    supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
-      this.currentUser = res;
-      this.drawResult = this.currentUser.is_ready;
-      this.assignedFriend = this.currentUser.friend_id;
-      this.isAdminUser.set(!!this.currentUser.is_admin);
-      if (this.currentUser?.id) {
-        const storageKey = this.getWheelStorageKey();
-        this.wheelAlreadyPlayed = localStorage.getItem(storageKey) === 'true';
-      }
-    });
-    supabaseService.getParticipants(localStorage.getItem("uuid") as string).then(res => {
-      this.participants = res;
-    });
+    this.eventConfig.set(localDbService.getCachedInfoEvent());
+    const uuid = localStorage.getItem('uuid') as string;
+    if (uuid) {
+      localDbService.getParticipant(uuid).then(res => {
+        this.currentUser = res;
+        this.drawResult = this.currentUser.is_ready;
+        this.assignedFriend = this.currentUser.friend_id;
+        this.wheelAlreadyPlayed = Boolean(this.currentUser.wheel_played);
+        this.isAdminUser.set(!!this.currentUser.is_admin || this.currentUser.role === 'admin');
+      });
+      localDbService.getParticipants(uuid).then(res => {
+        this.participants = res;
+      });
+    }
   }
 
   ngOnInit(): void {
     this.route.snapshot.queryParamMap.get('email');
-    this.getInfoEvent();
+    this.localDbService
+      .getInfoEvent()
+      .then((event) => this.eventConfig.set(event))
+      .catch(() => this.eventConfig.set(this.localDbService.getCachedInfoEvent()));
   }
 
   ngOnDestroy(): void {
     this.stopSpinSound();
+    clearTimeout(this.wheelTimeout);
+    clearTimeout(this.confettiTimeout);
     if (this.audioCtx) {
       this.audioCtx.close().catch(() => undefined);
     }
@@ -87,9 +122,7 @@ export class ExchangeComponent implements OnInit, OnDestroy {
   // Computed
   get isDrawn() {
     return this.drawResult;
-    // return this.drawResult === false;
   }
-
 
   get myAssignedFriend(): Participant | null {
     if (!this.isDrawn) return null;
@@ -97,91 +130,121 @@ export class ExchangeComponent implements OnInit, OnDestroy {
     return this.participants.find(p => p.id === this.assignedFriend) || null;
   }
 
-  get wheelGradient(): string {
-    if (!this.participants?.length) {
-      return '#0f1f2e';
+  get wheelSlices(): WheelSlice[] {
+    const list = this.participants || [];
+    const total = list.length;
+    if (!total) {
+      return [];
     }
-    const palette = ['#f97b90', '#66d7d1', '#f7c56a', '#78e6b2', '#bcd9ff', '#ff9bad'];
-    const slices = this.participants.map((_, index) => {
-      const start = (index / this.participants.length) * 360;
-      const end = ((index + 1) / this.participants.length) * 360;
-      const color = palette[index % palette.length];
-      return `${color} ${start}deg ${end}deg`;
+
+    const cx = 200;
+    const cy = 200;
+    const radius = 194;
+    const sliceDeg = 360 / total;
+    const fontSize = this.getWheelFontSize(total);
+
+    return list.map((participant, index) => {
+      const startDeg = index * sliceDeg - 90;
+      const endDeg = (index + 1) * sliceDeg - 90;
+      const midDeg = (startDeg + endDeg) / 2;
+
+      let path: string;
+      if (total === 1) {
+        path = `M ${cx} ${cy - radius} A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius} Z`;
+      } else {
+        const startRad = (startDeg * Math.PI) / 180;
+        const endRad = (endDeg * Math.PI) / 180;
+        const x1 = cx + radius * Math.cos(startRad);
+        const y1 = cy + radius * Math.sin(startRad);
+        const x2 = cx + radius * Math.cos(endRad);
+        const y2 = cy + radius * Math.sin(endRad);
+        const largeArc = sliceDeg > 180 ? 1 : 0;
+        path = `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius} ${radius} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+      }
+
+      let color = CHRISTMAS_SLICE_PALETTE[index % CHRISTMAS_SLICE_PALETTE.length];
+      if (total > 1 && index === total - 1 && color === CHRISTMAS_SLICE_PALETTE[0]) {
+        color = '#1b7a4c';
+      }
+
+      const fullName = participant.name || `Participante ${index + 1}`;
+      return {
+        id: participant.id || String(index),
+        label: this.formatWheelLabel(fullName, total),
+        fullName,
+        path,
+        color,
+        textTransform: `rotate(${midDeg.toFixed(2)} ${cx} ${cy})`,
+        fontSize,
+      };
     });
-    return `conic-gradient(${slices.join(',')})`;
   }
 
   get canAddGift(): boolean {
-    return this.currentUser.gifts.length < 5;
+    return (this.currentUser?.gifts?.length ?? 0) < 5;
   }
-
 
   // UI actions
   toggleUserExpand(userId: string) {
     this.expandedUserId = this.expandedUserId === userId ? null : userId;
   }
 
-
   openGift(gift: Gift) {
-    this.selectedGift = gift;
-    // prevent background scroll if wanted
+    this.selectedGift = { ...gift };
     document.body.style.overflow = 'hidden';
   }
 
   openDialogNewGift() {
     this.newGift = {
-      id: "",
-      title: "",
-      store: "",
-      link: ""
-    }
+      id: '',
+      title: '',
+      store: '',
+      link: ''
+    };
     document.body.style.overflow = 'hidden';
   }
 
-
-  closeGift() {
+  async closeGift() {
     this.selectedGift = null;
     this.newGift = null;
     document.body.style.overflow = '';
 
-    // Refresh
-    this.supabaseService.getParticipant(localStorage.getItem("uuid") as string).then(res => {
-      this.currentUser = res;
-    });
+    const uuid = localStorage.getItem('uuid');
+    if (uuid) {
+      this.currentUser = await this.localDbService.getParticipant(uuid);
+    }
   }
 
-
-  // Placeholder: función para disparar el sorteo (probablemente en el backend)
   async requestDraw() {
     if (!this.showConfirm()) {
       this.showConfirm.set(true);
-      let text = `Recuerda una vez confirmado el sorteo no hay marcha atras! \n¿Deseas continuar?`;
+      let text = `Recuerda que una vez confirmado el sorteo de ${this.eventConfig().event_title} no hay marcha atrás.\n¿Deseas continuar?`;
       if (this.currentUser.gifts.length < 3) {
-          text = `Sin ideas? Recuerda una vez confirmado el sorteo no hay marcha atras! \nAun puedes agregar más regalos!`
+        text = `¿Sin ideas? Recuerda que una vez confirmado el sorteo de ${this.eventConfig().event_title} no hay marcha atrás.\n¡Aún puedes agregar más regalos!`;
       }
       this.showTextDraw.set(text);
       return;
     }
     this.showConfirm.set(false);
-    this.showTextDraw.set("");
-    // emit event o llamada a servicio; aquí solo un ejemplo de cómo se podría indicar
-    await this.supabaseService.updatedParticipantToReady(localStorage.getItem("uuid") as string, true);
+    this.showTextDraw.set('');
+    await this.localDbService.updatedParticipantToReady(localStorage.getItem('uuid') as string, true);
     this.drawResult = true;
   }
 
-  addGift(gift: Gift) {
-    this.supabaseService.saveGift(gift, this.currentUser.id as string)
-    this.closeGift();
+  async addGift(gift: Gift) {
+    if (!gift.title?.trim() || !this.currentUser?.id) return;
+    await this.localDbService.saveGift(gift, this.currentUser.id);
+    await this.closeGift();
   }
 
-  removeGift(gift: Gift) {
-    this.supabaseService.updateGift(gift, 1);
-    this.closeGift();
+  async removeGift(gift: Gift) {
+    await this.localDbService.updateGift(gift, 1);
+    await this.closeGift();
   }
 
-  updateGift(gift: Gift) {
-    this.supabaseService.updateGift(gift, 0);
-    this.closeGift();
+  async updateGift(gift: Gift) {
+    await this.localDbService.updateGift(gift, 0);
+    await this.closeGift();
   }
 
   startWheelReveal() {
@@ -193,14 +256,14 @@ export class ExchangeComponent implements OnInit, OnDestroy {
       0
     );
     const sliceSize = 360 / totalParticipants;
-    const targetAngle = assignedIndex * sliceSize + sliceSize / 2;
-    const pointerAngle = 270; // apuntando hacia la parte superior
-    const diff = (pointerAngle - targetAngle + 360) % 360;
-    this.wheelRotation = 1440 + diff;
+    const midClockwise = assignedIndex * sliceSize + sliceSize / 2;
+    const landingOffset = (360 - midClockwise + 360) % 360;
+    this.wheelRotation = 360 * 6 + landingOffset;
     this.wheelStaticAngle = 0;
 
     this.showWheelOverlay = true;
     this.wheelSpinning = true;
+    this.wheelRevealFinished = false;
     this.showConfetti = false;
     this.startSpinSound();
 
@@ -209,17 +272,22 @@ export class ExchangeComponent implements OnInit, OnDestroy {
 
     this.wheelTimeout = setTimeout(() => {
       this.wheelSpinning = false;
+      this.wheelRevealFinished = true;
       this.showConfetti = true;
       this.wheelAlreadyPlayed = true;
+      this.currentUser = { ...this.currentUser, wheel_played: true };
       this.wheelStaticAngle = ((this.wheelRotation % 360) + 360) % 360;
       this.stopSpinSound();
       this.playConfettiSound();
-      if (this.currentUser?.id) {
-        localStorage.setItem(this.getWheelStorageKey(), 'true');
+
+      const uuid = localStorage.getItem('uuid');
+      if (uuid) {
+        this.localDbService.updateParticipantWheelStatus(uuid, true).catch(() => undefined);
       }
+
       this.confettiTimeout = setTimeout(() => {
         this.showConfetti = false;
-      }, 2500);
+      }, 3200);
     }, this.wheelDuration);
   }
 
@@ -232,17 +300,44 @@ export class ExchangeComponent implements OnInit, OnDestroy {
     clearTimeout(this.confettiTimeout);
   }
 
-  wheelLabelTransform(index: number): string {
-    const total = this.participants.length || 1;
-    const sliceSize = 360 / total;
-    const angle = index * sliceSize + sliceSize / 2;
-    const wheelAngle = ((this.wheelStaticAngle % 360) + 360) % 360;
-    const compensate = angle + wheelAngle;
-    return `rotate(${angle}deg) translateY(-50%) rotate(${-compensate}deg)`;
+  private buildWheelBulbs(): WheelBulb[] {
+    const count = 24;
+    const cx = 220;
+    const cy = 220;
+    const radius = 207;
+    return Array.from({ length: count }).map((_, index) => {
+      const angleRad = ((index * (360 / count) - 90) * Math.PI) / 180;
+      return {
+        cx: Number((cx + radius * Math.cos(angleRad)).toFixed(2)),
+        cy: Number((cy + radius * Math.sin(angleRad)).toFixed(2)),
+        color: BULB_PALETTE[index % BULB_PALETTE.length],
+        delay: `${(index % 4) * 0.28}s`,
+      };
+    });
   }
 
-  private getWheelStorageKey() {
-    return `wheel-spin-${this.currentUser?.id}`;
+  private getWheelFontSize(total: number): number {
+    if (total <= 8) return 14;
+    if (total <= 15) return 11.5;
+    if (total <= 25) return 9.2;
+    if (total <= 35) return 7.6;
+    return 6.2;
+  }
+
+  private formatWheelLabel(name: string, total: number): string {
+    const clean = name.trim();
+    const maxChars = total <= 12 ? 16 : total <= 25 ? 13 : 10;
+    if (clean.length <= maxChars) {
+      return clean;
+    }
+    const parts = clean.split(/\s+/);
+    if (parts.length > 1) {
+      const compact = `${parts[0]} ${parts[1][0]}.`;
+      if (compact.length <= maxChars) {
+        return compact;
+      }
+    }
+    return `${clean.slice(0, maxChars - 1)}…`;
   }
 
   private ensureAudioContext(): AudioContext | undefined {
@@ -265,11 +360,13 @@ export class ExchangeComponent implements OnInit, OnDestroy {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(220, ctx.currentTime);
+    osc.frequency.setValueAtTime(240, ctx.currentTime);
     const duration = this.wheelDuration / 1000;
-    osc.frequency.linearRampToValueAtTime(660, ctx.currentTime + duration);
+    osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + duration * 0.45);
+    osc.frequency.exponentialRampToValueAtTime(280, ctx.currentTime + duration);
     gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.2);
+    gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.25);
+    gain.gain.linearRampToValueAtTime(0.015, ctx.currentTime + duration);
     osc.connect(gain).connect(ctx.destination);
     osc.start();
     this.spinOscillator = osc;
@@ -290,53 +387,43 @@ export class ExchangeComponent implements OnInit, OnDestroy {
   private playConfettiSound() {
     const ctx = this.ensureAudioContext();
     if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(660, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.6);
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = ctx.currentTime + idx * 0.09;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(0.11, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.45);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.46);
+    });
   }
-
 
   addParticiapant() {
     const participant: Participant = {
-      name: "Adrian Oswaldo",
+      name: 'Adrian Oswaldo',
       gifts: []
-    }
-    this.supabaseService.saveParticipant(participant).catch(() => {
+    };
+    this.localDbService.saveParticipant(participant).catch(() => {
       // handled silently
     });
   }
 
   async signOut() {
-    const { error } = await this.supabaseService.signOut();
+    const { error } = await this.localDbService.signOut();
     if (error) {
-      console.error("Error signing out:", error.message);
+      console.error('Error signing out:', error.message);
     } else {
-      // Optionally, redirect the user to a login page or home page
-      localStorage.clear();
-      localStorage.setItem(this.getWheelStorageKey(), 'true');
+      localStorage.removeItem('uuid');
+      localStorage.removeItem('username');
+      localStorage.removeItem('auth_token');
       this.router.navigate(['/login']);
     }
   }
-
-  getInfoEvent() {
-    const event = JSON.parse(localStorage.getItem("event") as string);
-
-    this.dateEvent.set(event.date_event);
-    this.timeEvent.set(event.time_event);
-    this.moneyEvent.set(event.money_event);
-    this.startEvent.set(event.start_event);
-    this.uploadGift.set(event.upload_gift);
-  }
-  // TODO
-  // Crear una funcion que haga una animacion de ruleta para asignar el amigo secreto. Esta funcion se ejecutara por un boton
 
   goToAdminDashboard() {
     this.router.navigate(['/admin']);
