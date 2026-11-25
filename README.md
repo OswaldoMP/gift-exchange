@@ -61,6 +61,14 @@ Al arrancar por primera vez, SQLite crea las tablas (`users`, `sessions`, `parti
   - Copia `.env.example` a `.env` y configura `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` y `SMTP_FROM` para enviar correos reales vía SMTP (TLS/STARTTLS).
   - Si `SMTP_HOST` está vacío, el servidor entra en **modo local**: guarda los correos HTML en `server/data/outbox/` y ofrece un enlace de confirmación local para pruebas.
 
+## Despliegue en GitHub Pages
+
+El workflow `.github/workflows/deploy-gh-pages.yml` valida las pruebas del servidor SQLite y el typecheck de Angular antes de compilar y publicar en la rama `gh-pages` (al hacer push a `main` o manualmente vía **Actions → Run workflow**).
+
+Variables opcionales en **GitHub → Settings → Secrets and variables → Actions → Variables**:
+- `API_URL`: URL pública de tu servidor local/remoto de SQLite (por ejemplo, expuesta con Cloudflare Tunnel o desplegada en un VPS, terminando en `/api`). Si no se define, usa `/api`.
+- `BASE_HREF`: ruta base de la app (por defecto `/<nombre-del-repo>/`; usa `/` si configuras un dominio personalizado).
+
 ## Pruebas
 
 - Pruebas del servidor local y SQLite:

@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gh-pages
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -20,20 +24,45 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Angular app
-        run: npm run build -- --configuration production --base-href /${{ github.event.repository.name }}/
+      - name: Run backend SQLite tests
+        run: npm run test:server
 
-      - name: Create SPA fallback
-        run: cp dist/exchange-client/browser/index.html dist/exchange-client/browser/404.html
+      - name: Typecheck Angular specs
+        run: npx tsc -p tsconfig.spec.json --noEmit
+
+      - name: Configure runtime API URL
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          api_url="${API_URL:-/api}"
+          cat <<EOF > src/enviroments/enviroment.ts
+          export const environment = {
+            production: true,
+            apiUrl: '${api_url}',
+          };
+          EOF
+
+      - name: Build Angular app
+        env:
+          BASE_HREF: ${{ vars.BASE_HREF }}
+        run: |
+          href="${BASE_HREF:-/${{ github.event.repository.name }}/}"
+          echo "Building Angular app with base href '$href'"
+          npm run build -- --configuration production --base-href "$href"
+
+      - name: Prepare GitHub Pages SPA files
+        run: |
+          cp dist/exchange-client/browser/index.html dist/exchange-client/browser/404.html
+          touch dist/exchange-client/browser/.nojekyll
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist/exchange-client/browser
