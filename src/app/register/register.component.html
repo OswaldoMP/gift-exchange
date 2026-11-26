@@ -106,17 +106,17 @@
         </button>
             </form>
 
-            <div *ngIf="pendingConfirmation()" style="margin-top:1rem;padding:1rem;border-radius:16px;background:rgba(120,230,178,0.12);border:1px solid rgba(120,230,178,0.45);font-size:0.9rem;">
-                <p style="margin:0 0 0.5rem;font-weight:600;">📧 Revisa tu correo electrónico</p>
-                <p style="margin:0 0 0.75rem;">
+            <div class="pending-banner" *ngIf="pendingConfirmation()">
+                <p class="pending-title">📧 Revisa tu correo electrónico</p>
+                <p>
                     Enviamos un enlace de confirmación a <strong>{{ email() }}</strong>. Al abrirlo entrarás directo a tu panel del intercambio.
                 </p>
-                <button type="button" (click)="onResendConfirmation()" [disabled]="resendingEmail()" style="border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;padding:0.45rem 0.9rem;border-radius:10px;cursor:pointer;">
+                <button type="button" class="resend-btn" (click)="onResendConfirmation()" [disabled]="resendingEmail()">
                     {{ resendingEmail() ? 'Reenviando...' : 'Reenviar correo' }}
                 </button>
-                <p *ngIf="confirmationPreviewUrl()" style="margin:0.75rem 0 0;">
-                    <a [href]="confirmationPreviewUrl()" style="color:#ffe299;font-weight:600;">Confirmar cuenta ahora (modo local sin SMTP) →</a>
-                </p>
+                <a *ngIf="confirmationPreviewUrl()" [href]="confirmationPreviewUrl()">
+                    Confirmar cuenta ahora (modo local sin SMTP) →
+                </a>
             </div>
 
             <div class="extras">

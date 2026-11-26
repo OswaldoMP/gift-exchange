@@ -88,14 +88,14 @@
         </button>
             </form>
 
-            <div class="resend-banner" *ngIf="showResendConfirmation()" style="margin-top:1rem;padding:0.9rem 1rem;border-radius:14px;background:rgba(247,197,106,0.12);border:1px solid rgba(247,197,106,0.45);font-size:0.88rem;">
-                <p style="margin:0 0 0.6rem;">Tu cuenta aún no está confirmada. Revisa tu correo o solicita un nuevo enlace.</p>
+            <div class="resend-banner" *ngIf="showResendConfirmation()">
+                <p>Tu cuenta aún no está confirmada. Revisa tu correo o solicita un nuevo enlace.</p>
                 <button type="button" class="ghost" (click)="onResendConfirmation()" [disabled]="resendingEmail()">
                     {{ resendingEmail() ? 'Reenviando...' : 'Reenviar correo de confirmación' }}
                 </button>
-                <p *ngIf="confirmationPreviewUrl()" style="margin:0.65rem 0 0;">
-                    <a [href]="confirmationPreviewUrl()" style="color:#ffe299;font-weight:600;">Confirmar cuenta ahora (vista local sin SMTP)</a>
-                </p>
+                <a *ngIf="confirmationPreviewUrl()" [href]="confirmationPreviewUrl()" class="resend-preview-link">
+                    Confirmar cuenta ahora (vista local sin SMTP) →
+                </a>
             </div>
 
             <footer class="panel-footer">

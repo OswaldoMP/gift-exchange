@@ -10,30 +10,35 @@
 }
 
 .ss-wrapper.disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   pointer-events: none;
 }
 
 .ss-trigger {
   min-height: 44px;
-  padding: 0.45rem 0.75rem;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(12, 24, 38, 0.94);
-  color: #f3f7ff;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.ss-trigger:hover {
+  border-color: var(--border-strong);
 }
 
 .ss-wrapper.open .ss-trigger,
 .ss-trigger:focus {
   outline: none;
-  border-color: rgba(247, 197, 106, 0.75);
-  box-shadow: 0 0 0 2px rgba(247, 197, 106, 0.16);
+  border-color: var(--accent-gold);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 0 0 3px rgba(232, 194, 122, 0.14);
 }
 
 .ss-value-area {
@@ -45,12 +50,12 @@
 }
 
 .ss-placeholder {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.92rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .ss-single-label {
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -66,19 +71,19 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.22rem 0.55rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: rgba(247, 197, 106, 0.16);
-  border: 1px solid rgba(247, 197, 106, 0.45);
-  color: #ffe8a8;
-  font-size: 0.82rem;
+  background: rgba(232, 194, 122, 0.14);
+  border: 1px solid var(--border-gold);
+  color: var(--accent-gold-bright);
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .ss-chip-remove {
   border: none;
   background: transparent;
-  color: #ffe8a8;
+  color: var(--accent-gold-bright);
   cursor: pointer;
   padding: 0;
   font-size: 0.95rem;
@@ -95,7 +100,7 @@
 .ss-clear {
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 1.05rem;
   line-height: 1;
@@ -103,17 +108,18 @@
 }
 
 .ss-clear:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .ss-caret {
-  color: rgba(255, 255, 255, 0.7);
-  transition: transform 0.2s ease;
-  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s var(--ease-out);
+  font-size: 0.9rem;
 }
 
 .ss-caret.rotated {
   transform: rotate(180deg);
+  color: var(--accent-gold);
 }
 
 .ss-dropdown {
@@ -122,42 +128,58 @@
   left: 0;
   right: 0;
   z-index: 4200;
-  border-radius: 16px;
-  background: #0a1726;
-  border: 1px solid rgba(247, 197, 106, 0.35);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65);
+  border-radius: var(--r-lg);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-modal);
   overflow: hidden;
+  animation: ssDropIn 0.18s var(--ease-out) both;
+}
+
+@keyframes ssDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .ss-search-box {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.55rem 0.7rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .ss-search-input {
   flex: 1;
   min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
-  background: rgba(5, 10, 18, 0.85);
-  color: #f3f7ff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
   padding: 0.45rem 0.7rem;
-  font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+}
+
+.ss-search-input::placeholder {
+  color: var(--text-muted);
 }
 
 .ss-search-input:focus {
   outline: none;
-  border-color: rgba(247, 197, 106, 0.7);
+  border-color: var(--accent-gold);
 }
 
 .ss-count {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
   min-width: 1.4rem;
   text-align: right;
 }
@@ -177,37 +199,38 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 10px;
+  padding: 0.52rem 0.7rem;
+  border-radius: var(--r-sm);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .ss-option:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--surface-hover);
 }
 
 .ss-option.selected {
-  background: rgba(247, 197, 106, 0.14);
+  background: rgba(232, 194, 122, 0.12);
 }
 
 .ss-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--border-strong);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .ss-checkbox.checked {
-  background: #f7c56a;
-  border-color: #f7c56a;
-  color: #050a12;
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: #081018;
 }
 
 .ss-option-text {
@@ -218,24 +241,24 @@
 }
 
 .ss-option-label {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: #f3f7ff;
+  color: var(--text-primary);
 }
 
 .ss-option-sublabel {
-  font-size: 0.76rem;
-  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 .ss-check-mark {
-  color: #78e6b2;
+  color: var(--accent-emerald);
   font-weight: 700;
 }
 
 .ss-empty {
   padding: 0.9rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-size: 0.86rem;
 }
